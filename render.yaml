@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: ic-hdl-generator
+    env: python
+    region: oregon
+    buildCommand: "cd backend && pip install -r requirements.txt && pip install gunicorn && python seed_db.py"
+    startCommand: "cd backend && gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        value: /opt/render/project/src/backend/ic_hdl.db
+    
+    # Persistent disk for database
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/backend
+      sizeGB: 1
