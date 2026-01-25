@@ -1,0 +1,36 @@
+// ============================================================================
+// Auto-generated HDL from IC Metadata
+// Part Number: {{part_number}}
+// IC Name:     {{ic_name}}
+// Generated:   {{timestamp}}
+// ============================================================================
+
+`timescale 1ns / 1ps
+
+module IC_{{part_number}}(
+    // Input ports
+    {% for input in ports.inputs %}
+    input wire {{input}},
+    {% endfor %}
+    
+    // Output ports
+    {% for output in ports.outputs %}
+    output wire {{output}},
+    {% endfor %}
+    
+    // Power ports
+    input wire {{ports.power[0]}},
+    input wire {{ports.power[1]}}
+);
+
+wire [1:0] select;
+wire [3:0] mux1_data, mux2_data;
+
+assign select = { {{ports.inputs[9]}}, {{ports.inputs[10]}} };
+assign mux1_data = { {{ports.inputs[3]}}, {{ports.inputs[4]}}, {{ports.inputs[5]}}, {{ports.inputs[6]}} };
+assign mux2_data = { {{ports.inputs[13]}}, {{ports.inputs[12]}}, {{ports.inputs[11]}}, {{ports.inputs[10]}} };
+
+assign {{ports.outputs[0]}} = (!{{ports.inputs[0]}}) ? mux1_data[select] : 1'b0;
+assign {{ports.outputs[1]}} = (!{{ports.inputs[1]}}) ? mux2_data[select] : 1'b0;
+
+endmodule

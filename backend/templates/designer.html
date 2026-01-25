@@ -1,0 +1,708 @@
+{% extends "base.html" %}
+
+{% block title %}Circuit Designer - IC HDL Generator{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<div class="flex h-[calc(100vh-4rem)]">
+    <!-- Sidebar / Component Library -->
+    <div class="w-64 bg-white border-r border-gray-200 flex flex-col overflow-y-auto">
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-medium text-gray-900">Components</h2>
+            <p class="text-xs text-gray-500 mt-1">Drag to canvas</p>
+        </div>
+
+        <div class="p-4 space-y-4">
+            <!-- IC Category -->
+            <div>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Integrated Circuits</h3>
+                <div class="space-y-2">
+                    {% for part in ['7400', '7402', '7404', '7408', '7432', '7486', '7474', '7476', '74138', '74139',
+                    '74147', '74153', '7447', '7485', '7490', '7493', '74121', '74245', '555', '4017'] %}
+                    <div class="component-item cursor-move bg-white border border-gray-200 rounded p-2 hover:shadow-md hover:border-blue-500 transition-all flex items-center"
+                        draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-type="ic"
+                        data-name="{{ part }}">
+                        <div
+                            class="w-8 h-8 bg-blue-100 rounded flex items-center justify-center text-xs font-bold text-blue-700 mr-3">
+                            {{ part[-2:] }}</div>
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">{{ part }}</div>
+                            <div class="text-xs text-gray-500">IC</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- I/O Category -->
+            <div>
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Input / Output</h3>
+                <div class="space-y-2">
+                    <div class="component-item cursor-move bg-white border border-gray-200 rounded p-2 hover:shadow-md hover:border-green-500 transition-all flex items-center"
+                        draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-type="input"
+                        data-name="Switch">
+                        <div
+                            class="w-8 h-8 bg-green-100 rounded flex items-center justify-center text-xs font-bold text-green-700 mr-3">
+                            IN</div>
+                        <div class="text-sm font-medium text-gray-900">Switch Input</div>
+                    </div>
+                    <div class="component-item cursor-move bg-white border border-gray-200 rounded p-2 hover:shadow-md hover:border-red-500 transition-all flex items-center"
+                        draggable="true" ondragstart="drag(event)" ondragend="dragEnd(event)" data-type="output"
+                        data-name="LED">
+                        <div
+                            class="w-8 h-8 bg-red-100 rounded flex items-center justify-center text-xs font-bold text-red-700 mr-3">
+                            OUT</div>
+                        <div class="text-sm font-medium text-gray-900">LED Output</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="flex-1 bg-gray-100 relative overflow-hidden flex flex-col">
+        <!-- Toolbar -->
+        <div class="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
+            <div class="bg-white rounded-lg shadow-lg p-2 pointer-events-auto flex space-x-2">
+                <button onclick="clearCanvas()" class="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
+                    title="Clear Canvas">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
+                <div class="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+
+                <!-- Tool Selector -->
+                <button onclick="setTool('select')" id="btn-select"
+                    class="p-2 text-blue-600 bg-blue-50 rounded shadow-inner" title="Select / Move">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122">
+                        </path>
+                    </svg>
+                </button>
+                <button onclick="setTool('wire')" id="btn-wire"
+                    class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded" title="Wire Mode">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                        </path>
+                    </svg>
+                </button>
+
+                <div class="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+
+                <button onclick="zoomIn()" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                    title="Zoom In">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                    </svg>
+                </button>
+                <button onclick="zoomOut()" class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                    title="Zoom Out">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-2 pointer-events-auto flex space-x-2">
+                <button
+                    class="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 shadow-sm"
+                    onclick="saveCircuit()">
+                    💾 Save
+                </button>
+                <button
+                    class="bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-purple-700 shadow-sm"
+                    onclick="loadCircuit()">
+                    📂 Load
+                </button>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 shadow-sm"
+                    onclick="exportDesign()">
+                    Export HDL
+                </button>
+            </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="flex-1 overflow-hidden" id="canvas-container" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <canvas id="c"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+<script>
+    // Wait for both DOM and Fabric.js to load
+    window.addEventListener('load', function () {
+        console.log("Page loaded, fabric available:", typeof fabric !== 'undefined');
+
+        if (typeof fabric === 'undefined') {
+            alert("ERROR: Fabric.js failed to load. Please refresh the page.");
+            return;
+        }
+
+        initializeDesigner();
+    });
+
+    function initializeDesigner() {
+        // --- State ---
+        let currentTool = 'select'; // 'select' or 'wire'
+        let isDrawingWire = false;
+        let wireStartPort = null;
+        let tempWire = null;
+
+        // --- Fabric Init ---
+        const canvas = new fabric.Canvas('c', {
+            backgroundColor: '#f3f4f6',
+            selection: true,
+            preserveObjectStacking: true,
+            fireRightClick: true,  // Enable right-click
+            stopContextMenu: true, // Prevent context menu
+        });
+
+        // Resize
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            canvas.setWidth(container.clientWidth);
+            canvas.setHeight(container.clientHeight);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- Tool Switching ---
+        window.setTool = function (tool) {
+            currentTool = tool;
+            canvas.discardActiveObject();
+            canvas.requestRenderAll();
+
+            // Update UI
+            const btnSelect = document.getElementById('btn-select');
+            const btnWire = document.getElementById('btn-wire');
+
+            if (tool === 'select') {
+                btnSelect.classList.add('text-blue-600', 'bg-blue-50', 'shadow-inner');
+                btnSelect.classList.remove('text-gray-600', 'hover:bg-blue-50');
+                btnWire.classList.remove('text-blue-600', 'bg-blue-50', 'shadow-inner');
+                btnWire.classList.add('text-gray-600', 'hover:bg-blue-50');
+
+                canvas.selection = true;
+                canvas.defaultCursor = 'default';
+                canvas.hoverCursor = 'move';
+                makePortsNotClickable();
+            } else if (tool === 'wire') {
+                btnWire.classList.add('text-blue-600', 'bg-blue-50', 'shadow-inner');
+                btnWire.classList.remove('text-gray-600', 'hover:bg-blue-50');
+                btnSelect.classList.remove('text-blue-600', 'bg-blue-50', 'shadow-inner');
+                btnSelect.classList.add('text-gray-600', 'hover:bg-blue-50');
+
+                canvas.selection = false;
+                canvas.defaultCursor = 'crosshair';
+                canvas.hoverCursor = 'crosshair';
+                makePortsClickable();
+            }
+        }
+
+        function makePortsClickable() {
+            // In wire mode, we want ports to be interactive but not draggable groups
+            canvas.getObjects().forEach(obj => {
+                if (obj.isPort) {
+                    obj.hoverCursor = 'crosshair';
+                } else {
+                    obj.selectable = false; // Disable selecting logic/wires in wire mode for now
+                }
+            });
+        }
+
+        function makePortsNotClickable() {
+            canvas.getObjects().forEach(obj => {
+                if (obj.isPort) {
+                    obj.hoverCursor = 'default';
+                } else {
+                    obj.selectable = true;
+                }
+            });
+        }
+
+        // --- Drag and Drop ---
+        window.allowDrop = function (ev) {
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "copy";
+        }
+
+        window.drag = function (ev) {
+            console.log("Drag started:", ev.target.dataset.type, ev.target.dataset.name);
+            ev.dataTransfer.setData("type", ev.target.dataset.type);
+            ev.dataTransfer.setData("name", ev.target.dataset.name);
+            ev.dataTransfer.effectAllowed = "copy";
+            ev.target.classList.add('opacity-50');
+        }
+
+        window.dragEnd = function (ev) {
+            ev.target.classList.remove('opacity-50');
+        }
+
+        window.drop = function (ev) {
+            ev.preventDefault();
+
+            // Debugging logs
+            console.log("Drop event triggered");
+
+            let type = ev.dataTransfer.getData("type");
+            let name = ev.dataTransfer.getData("name");
+
+            // Fallback for some browsers or if data transfer fails
+            if (!type && ev.target.dataset.type) type = ev.target.dataset.type;
+            if (!name && ev.target.dataset.name) name = ev.target.dataset.name;
+
+            console.log("Dropping:", type, name);
+
+            if (!type || !name) {
+                alert("Error: Missing component type or name");
+                console.error("Missing type/name in drop");
+                return;
+            }
+
+            const coords = getCanvasCoordinates(ev);
+            const x = coords.x;
+            const y = coords.y;
+
+            console.log("Drop coordinates:", x, y);
+
+            try {
+                if (type === 'ic') {
+                    console.log("Adding IC:", name, "at", x, y);
+                    fetchAndAddIC(name, x, y);
+                } else if (type === 'input') {
+                    console.log("Adding input at", x, y);
+                    addIO('input', x, y);
+                } else if (type === 'output') {
+                    console.log("Adding output at", x, y);
+                    addIO('output', x, y);
+                }
+            } catch (error) {
+                console.error("Error in drop:", error);
+                alert("Error placing component: " + error.message);
+            }
+        }
+
+        // --- Component Logic ---
+
+        // Coordinate Helper
+        function getCanvasCoordinates(ev) {
+            const container = document.getElementById('canvas-container');
+            const rect = container.getBoundingClientRect();
+            return {
+                x: ev.clientX - rect.left,
+                y: ev.clientY - rect.top
+            };
+        }
+
+        async function fetchAndAddIC(partNumber, x, y) {
+            // Fetch real metadata
+            try {
+                const resp = await fetch(`/ics/${partNumber}`);
+                if (!resp.ok) throw new Error("IC not found");
+                const data = await resp.json();
+
+                // Basic Pin Count derivation or Default
+                // Assuming standard DIP widths. 14, 16, 20 are common.
+                // We'll trust the database or use a default.
+                // Since data might not have 'pin_count' at top, we check ports.
+
+                let pinCount = 14;
+                if (data.pins_configuration && data.pins_configuration.pin_map) {
+                    pinCount = Object.keys(data.pins_configuration.pin_map).length;
+                } else if (['7400', '7402', '7404', '7486', '7432', '7408'].includes(partNumber)) pinCount = 14;
+                else if (['7474', '7476'].includes(partNumber)) pinCount = 16; // 7474 is 14 but lets use standard sizing
+
+                addIC(partNumber, x, y, pinCount, data.pins_configuration?.pin_map);
+
+            } catch (e) {
+                console.error(e);
+                addIC(partNumber, x, y, 14, {}); // Fallback
+            }
+        }
+
+        function addIC(partNumber, x, y, pinCount, pinMap) {
+            const pinSpacing = 20;
+            const width = 100;
+            const pinsPerSide = Math.ceil(pinCount / 2);
+            const height = (pinsPerSide * pinSpacing) + 20;
+
+            // Body
+            const rect = new fabric.Rect({
+                width: width,
+                height: height,
+                fill: '#1e293b',
+                rx: 4,
+                ry: 4,
+                stroke: '#475569',
+                strokeWidth: 1,
+                shadow: 'rgba(0,0,0,0.3) 5px 5px 5px'
+            });
+
+            // Text
+            const text = new fabric.Text(partNumber, {
+                fontSize: 14,
+                fontWeight: 'bold',
+                fill: '#fff',
+                left: width / 2 - 10,
+                top: height / 2 - 20,
+                angle: -90
+            });
+
+            // Group Body - center it where component was dropped
+            const group = new fabric.Group([rect, text], {
+                left: x - width / 2,
+                top: y - height / 2,
+                subTargetCheck: true, // Allow selecting ports inside
+                hasControls: false,
+                padding: 0
+            });
+
+            canvas.add(group);
+
+            // Add Pins (as separate objects linked to group movement via event or simply ungrouped for prototype)
+            // Fabric Groups with sub-interaction are tricky. 
+            // Strategy: Add Pins as separate objects, attached to the group in custom property.
+            // Update their position on 'moving'.
+
+            const pins = [];
+
+            for (let i = 0; i < pinCount; i++) {
+                const isLeft = i < pinsPerSide;
+                // Left side: 1 to N/2 (Top to Bottom)
+                // Right side: N/2+1 to N (Bottom to Top)
+
+                let lx, ly;
+                let pinNum = i + 1;
+
+                if (isLeft) {
+                    lx = -width / 2;
+                    ly = -height / 2 + 20 + (i * pinSpacing);
+                } else {
+                    lx = width / 2;
+                    // Right side counts up from bottom
+                    let fromBottom = i - pinsPerSide;
+                    ly = height / 2 - 20 - (fromBottom * pinSpacing);
+                }
+
+                // To world coordinates
+                const wx = x + lx;
+                const wy = y + ly;
+
+                const pin = new fabric.Circle({
+                    radius: 6,
+                    fill: '#cbd5e1',
+                    stroke: '#475569',
+                    strokeWidth: 2,
+                    left: wx,
+                    top: wy,
+                    originX: 'center',
+                    originY: 'center',
+                    hasControls: false,
+                    selectable: false,
+                    hoverCursor: currentTool === 'wire' ? 'crosshair' : 'default',
+                });
+
+                // Metadata
+                pin.isPort = true;
+                pin.parentId = group.id; // Fabric assigns unique IDs? No, we might need UUIDs.
+                pin.pinIndex = pinNum;
+                pin.pinName = (pinMap && pinMap[pinNum]) ? pinMap[pinNum] : `P${pinNum}`;
+
+                // visual connection
+                pin.relX = lx;
+                pin.relY = ly;
+
+                canvas.add(pin);
+                pins.push(pin);
+
+                // Add Label on Hover (Tooltips are complex in Canvas, simple console log for now or separate TEXT object)
+            }
+
+            group.on('moving', function () {
+                const cx = group.left;
+                const cy = group.top;
+                pins.forEach(p => {
+                    p.set({
+                        left: cx + p.relX,
+                        top: cy + p.relY
+                    });
+                    p.setCoords();
+
+                    // Also update wires connected to this pin (Phase 3.5)
+                    updateWires(p);
+                });
+            });
+
+            // Send pins to back relative to body? No, pins on top usually or on edge.
+            pins.forEach(p => p.bringToFront());
+        }
+
+        function addIO(type, x, y) {
+            console.log("addIO called:", type, x, y);
+
+            let group;
+
+            if (type === 'input') {
+                // Toggle switch design
+                const switchBody = new fabric.Rect({
+                    width: 60, height: 35,
+                    fill: '#1e293b', stroke: '#475569', strokeWidth: 2,
+                    rx: 5, ry: 5
+                });
+                const toggleBase = new fabric.Rect({
+                    width: 40, height: 20,
+                    fill: '#374151', stroke: '#6b7280', strokeWidth: 1,
+                    rx: 10, ry: 10, left: 10, top: 7.5
+                });
+                const toggleKnob = new fabric.Circle({
+                    radius: 8,
+                    fill: '#10b981', stroke: '#059669', strokeWidth: 2,
+                    left: 35, top: 10
+                });
+                const label = new fabric.Text('SW', {
+                    fontSize: 10, fontWeight: 'bold', fill: '#fff',
+                    left: 23, top: 22
+                });
+                group = new fabric.Group([switchBody, toggleBase, toggleKnob, label], {
+                    left: x - 30, top: y - 17.5, hasControls: false
+                });
+            } else {
+                // LED design with glow
+                const ledGlow = new fabric.Circle({
+                    radius: 20,
+                    fill: 'rgba(220, 38, 38, 0.3)', stroke: 'rgba(220, 38, 38, 0.5)', strokeWidth: 1
+                });
+                const ledBody = new fabric.Circle({
+                    radius: 15,
+                    fill: '#dc2626', stroke: '#991b1b', strokeWidth: 2
+                });
+                const ledHighlight = new fabric.Circle({
+                    radius: 5,
+                    fill: 'rgba(255, 255, 255, 0.6)', left: -5, top: -5
+                });
+                const ledBase = new fabric.Rect({
+                    width: 20, height: 8,
+                    fill: '#6b7280', stroke: '#4b5563', strokeWidth: 1,
+                    rx: 2, ry: 2, left: -10, top: 15
+                });
+                const label = new fabric.Text('LED', {
+                    fontSize: 9, fontWeight: 'bold', fill: '#fff',
+                    left: -12, top: 25
+                });
+                group = new fabric.Group([ledGlow, ledBody, ledHighlight, ledBase, label], {
+                    left: x - 20, top: y - 20, hasControls: false
+                });
+            }
+
+            console.log("Adding IO group to canvas at", x, y);
+            canvas.add(group);
+            canvas.renderAll();
+            console.log("Canvas object count:", canvas.getObjects().length);
+
+            group.isPort = true;
+            group.isIO = true;
+            group.ioType = type;
+            group.on('moving', () => updateWires(group));
+        }
+
+        // --- Wiring Logic ---
+        let wires = [];
+
+        canvas.on('mouse:down', function (opt) {
+            if (currentTool !== 'wire') return;
+
+            const target = opt.target;
+            if (target && target.isPort) {
+                if (!isDrawingWire) {
+                    // Start Wire
+                    isDrawingWire = true;
+                    wireStartPort = target;
+
+                    const points = [target.left, target.top, target.left, target.top];
+                    tempWire = new fabric.Line(points, {
+                        strokeWidth: 3,
+                        fill: '#3b82f6',
+                        stroke: '#3b82f6',
+                        class: 'line',
+                        originX: 'center',
+                        originY: 'center',
+                        selectable: false,
+                        evented: false,
+                    });
+                    canvas.add(tempWire);
+                } else {
+                    // End Wire
+                    if (target !== wireStartPort) { // Don't connect to self
+                        finishWire(wireStartPort, target);
+                    }
+                    isDrawingWire = false;
+                    wireStartPort = null;
+                    canvas.remove(tempWire);
+                    tempWire = null;
+                }
+            } else {
+                // Clicked empty space - Cancel wire
+                if (isDrawingWire) {
+                    isDrawingWire = false;
+                    wireStartPort = null;
+                    canvas.remove(tempWire);
+                    tempWire = null;
+                }
+            }
+        });
+
+        canvas.on('mouse:move', function (opt) {
+            if (!isDrawingWire) return;
+            const pointer = canvas.getPointer(opt.e);
+            tempWire.set({ x2: pointer.x, y2: pointer.y });
+            canvas.requestRenderAll();
+        });
+
+        function finishWire(startPort, endPort) {
+            const wire = new fabric.Line([startPort.left, startPort.top, endPort.left, endPort.top], {
+                strokeWidth: 3,
+                fill: '#3b82f6',
+                stroke: '#3b82f6',
+                selectable: true,
+                lockMovementX: true,
+                lockMovementY: true,
+                lockScalingX: true,
+                lockScalingY: true,
+                lockRotation: true,
+                hasControls: false,
+                perPixelTargetFind: true
+            });
+
+            wire.startPort = startPort;
+            wire.endPort = endPort;
+
+            canvas.add(wire);
+            canvas.sendToBack(wire);
+            wires.push(wire);
+        }
+
+        function updateWires(port) {
+            // Find all wires connected to this port
+            wires.forEach(w => {
+                if (w.startPort === port) {
+                    w.set({ x1: port.left, y1: port.top });
+                    w.setCoords();
+                }
+                if (w.endPort === port) {
+                    w.set({ x2: port.left, y2: port.top });
+                    w.setCoords();
+                }
+            });
+            canvas.requestRenderAll();
+        }
+
+        // Tools
+        window.clearCanvas = function clearCanvas() {
+            canvas.clear();
+            wires = [];
+            canvas.setBackgroundColor('#f3f4f6', canvas.renderAll.bind(canvas));
+        }
+
+        window.zoomIn = function zoomIn() { canvas.setZoom(canvas.getZoom() * 1.1); }
+        window.zoomOut = function zoomOut() { canvas.setZoom(canvas.getZoom() * 0.9); }
+        window.exportDesign = async function exportDesign() {
+            const name = prompt("Module name:", "my_circuit");
+            if (!name) return;
+
+            const language = prompt("Language (verilog/vhdl):", "verilog");
+            if (!language) return;
+
+            // Prepare circuit data
+            const circuitData = {
+                objects: canvas.toJSON(['isPort', 'isIO', 'ioType']),
+                wires: wires.map(w => ({
+                    start: { left: w.startPort.left, top: w.startPort.top },
+                    end: { left: w.endPort.left, top: w.endPort.top }
+                }))
+            };
+
+            try {
+                const response = await fetch('/generator/generate-from-schematic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        circuit_data: circuitData,
+                        language: language,
+                        module_name: name
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+
+                    // Create download
+                    const blob = new Blob([result.hdl_code], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = result.filename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    alert(`HDL code generated and downloaded as ${result.filename}!`);
+                } else {
+                    const error = await response.json();
+                    alert(`Error: ${error.detail}`);
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert(`Export failed: ${error.message}`);
+            }
+        }
+
+        window.saveCircuit = async function () {
+            const name = prompt("Circuit name:");
+            if (!name) return;
+            try {
+                const resp = await fetch('/circuits/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        description: null,
+                        design_data: { objects: canvas.toJSON() }
+                    })
+                });
+                if (resp.ok) alert('Saved!');
+            } catch (e) { alert('Error: ' + e.message); }
+        }
+
+        window.loadCircuit = async function () {
+            try {
+                const resp = await fetch('/circuits/');
+                const circuits = await resp.json();
+                if (!circuits.length) { alert("No circuits!"); return; }
+                let msg = "";
+                circuits.forEach((c, i) => msg += `${i + 1}. ${c.name}\n`);
+                const sel = prompt(msg + `\nEnter 1-${circuits.length}:`);
+                if (!sel) return;
+                const idx = parseInt(sel) - 1;
+                const loadResp = await fetch(`/circuits/${circuits[idx].id}`);
+                const circuit = await loadResp.json();
+                canvas.clear();
+                canvas.loadFromJSON(circuit.design_data.objects, () => canvas.renderAll());
+                alert('Loaded!');
+            } catch (e) { alert('Error: ' + e.message); }
+        }
+
+    } // End of initializeDesigner
+
+</script>
+{% endblock %}

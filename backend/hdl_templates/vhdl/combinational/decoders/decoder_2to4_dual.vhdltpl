@@ -1,0 +1,61 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    -- Decoder 1
+    process(G1_n, A1, B1)
+    begin
+        Y1_0_n <= '1'; Y1_1_n <= '1'; Y1_2_n <= '1'; Y1_3_n <= '1';
+        if G1_n = '0' then
+            if    (B1='0' and A1='0') then Y1_0_n <= '0';
+            elsif (B1='0' and A1='1') then Y1_1_n <= '0';
+            elsif (B1='1' and A1='0') then Y1_2_n <= '0';
+            elsif (B1='1' and A1='1') then Y1_3_n <= '0';
+            end if;
+        end if;
+    end process;
+
+    -- Decoder 2
+    process(G2_n, A2, B2)
+    begin
+        Y2_0_n <= '1'; Y2_1_n <= '1'; Y2_2_n <= '1'; Y2_3_n <= '1';
+        if G2_n = '0' then
+            if    (B2='0' and A2='0') then Y2_0_n <= '0';
+            elsif (B2='0' and A2='1') then Y2_1_n <= '0';
+            elsif (B2='1' and A2='0') then Y2_2_n <= '0';
+            elsif (B2='1' and A2='1') then Y2_3_n <= '0';
+            end if;
+        end if;
+    end process;
+
+end Behavioral;

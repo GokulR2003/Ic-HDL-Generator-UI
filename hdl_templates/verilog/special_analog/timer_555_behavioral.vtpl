@@ -1,0 +1,81 @@
+// ============================================================================
+// Auto-generated HDL from IC Metadata
+// Part Number: {{part_number}}
+// IC Name:     {{ic_name}}
+// Generated:   {{timestamp}}
+// ============================================================================
+// WARNING: Behavioral model only - not synthesizable
+// ============================================================================
+
+`timescale 1ns / 1ps
+
+module IC_{{part_number}}(
+    // Input ports
+    {% for input in ports.inputs %}
+    input wire {{input}},
+    {% endfor %}
+    
+    // Output ports
+    {% for output in ports.outputs %}
+    output reg {{output}},
+    {% endfor %}
+    
+    // Bidirectional ports
+    {% for bidir in ports.bidirectional %}
+    inout wire {{bidir}},
+    {% endfor %}
+    
+    // Power ports
+    input wire {{ports.power[0]}},
+    input wire {{ports.power[1]}}
+);
+
+// Behavioral variables
+real vcc_level = 5.0;
+real trigger_level;
+real threshold_level;
+reg discharging;
+
+initial begin
+    {{ports.outputs[0]}} = 1'b0;  // OUT
+    discharging = 1'b0;
+    trigger_level = vcc_level / 3.0;
+    threshold_level = 2.0 * vcc_level / 3.0;
+end
+
+// Reset logic
+always @(negedge {{ports.inputs[2]}}) begin
+    if (!{{ports.inputs[2]}}) begin
+        {{ports.outputs[0]}} <= 1'b0;
+        discharging <= 1'b1;
+    end
+end
+
+// Trigger logic (monostable)
+always @(negedge {{ports.inputs[0]}}) begin
+    if ({{ports.inputs[2]}} && ({{ports.inputs[0]}} < trigger_level)) begin
+        {{ports.outputs[0]}} <= 1'b1;
+        discharging <= 1'b0;
+        
+        // Pulse width (behavioral)
+        #1000;  // 1us pulse
+        
+        if ({{ports.inputs[2]}}) begin
+            {{ports.outputs[0]}} <= 1'b0;
+            discharging <= 1'b1;
+        end
+    end
+end
+
+// Threshold logic
+always @(posedge {{ports.inputs[1]}}) begin
+    if ({{ports.inputs[2]}} && ({{ports.inputs[1]}} > threshold_level) && {{ports.outputs[0]}}) begin
+        {{ports.outputs[0]}} <= 1'b0;
+        discharging <= 1'b1;
+    end
+end
+
+// Discharge pin
+assign {{ports.bidirectional[0]}} = discharging ? 1'b0 : 1'bz;
+
+endmodule

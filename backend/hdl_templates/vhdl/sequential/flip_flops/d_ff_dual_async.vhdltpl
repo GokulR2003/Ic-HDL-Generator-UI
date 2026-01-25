@@ -1,0 +1,72 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+    signal q1_reg, q1_n_reg : STD_LOGIC;
+    signal q2_reg, q2_n_reg : STD_LOGIC;
+begin
+    -- Flip-Flop 1
+    process(PRE1_n, CLR1_n, CLK1)
+    begin
+        if (PRE1_n = '0' and CLR1_n = '1') then
+            q1_reg <= '1';
+        elsif (CLR1_n = '0' and PRE1_n = '1') then
+            q1_reg <= '0';
+        elsif (CLR1_n = '0' and PRE1_n = '0') then
+            -- Unstable state behavior varies; model as high logic for both
+            q1_reg <= '1'; 
+        elsif rising_edge(CLK1) then
+            q1_reg <= D1;
+        end if;
+    end process;
+    
+    Q1 <= q1_reg;
+    Q1_n <= not q1_reg;
+
+    -- Flip-Flop 2
+    process(PRE2_n, CLR2_n, CLK2)
+    begin
+        if (PRE2_n = '0' and CLR2_n = '1') then
+            q2_reg <= '1';
+        elsif (CLR2_n = '0' and PRE2_n = '1') then
+            q2_reg <= '0';
+        elsif (CLR2_n = '0' and PRE2_n = '0') then
+            q2_reg <= '1';
+        elsif rising_edge(CLK2) then
+            q2_reg <= D2;
+        end if;
+    end process;
+
+    Q2 <= q2_reg;
+    Q2_n <= not q2_reg;
+
+end Behavioral;

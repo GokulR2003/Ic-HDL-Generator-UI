@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">IC Database</h1>
+        <p class="mt-2 text-sm text-gray-700">Browse and search available 7400-series integrated circuits.</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6">
+        <form action="/ics-view" method="get" class="flex gap-4">
+            <input type="text" name="search" value="{{ search_query }}"
+                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md p-2 border"
+                placeholder="Search by part number, name, or description...">
+            <button type="submit"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Search
+            </button>
+        </form>
+    </div>
+
+    <!-- IC Grid -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {% for ic in ics %}
+        <div
+            class="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200 border border-gray-100">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-blue-100 rounded-md p-3">
+                        <span class="text-blue-600 font-bold text-lg">{{ ic.part_number }}</span>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dt class="text-sm font-medium text-gray-500 truncate">
+                            {{ ic.category | title }}
+                        </dt>
+                        <dd>
+                            <div class="text-lg font-medium text-gray-900">
+                                {{ ic.name }}
+                            </div>
+                        </dd>
+                    </div>
+                </div>
+                <!-- Description Truncated -->
+                <p class="mt-4 text-sm text-gray-600 line-clamp-2" title="{{ ic.description }}">
+                    {{ ic.description }}
+                </p>
+                <div class="mt-4 flex justify-between items-center">
+                    <span
+                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {{ ic.family }}
+                    </span>
+                    <a href="/ics-view/{{ ic.part_number }}"
+                        class="text-sm font-medium text-blue-600 hover:text-blue-500">
+                        View Details &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-span-full text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No ICs found</h3>
+            <p class="mt-1 text-sm text-gray-500">Try adjusting your search query.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

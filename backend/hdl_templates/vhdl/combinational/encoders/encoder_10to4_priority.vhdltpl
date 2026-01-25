@@ -1,0 +1,64 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    process(in1_n, in2_n, in3_n, in4_n, in5_n, in6_n, in7_n, in8_n, in9_n)
+    begin
+        -- Default (Active Low Logic)
+        outA_n <= '1'; outB_n <= '1'; outC_n <= '1'; outD_n <= '1';
+        
+        if in9_n = '0' then
+            outA_n <= '0'; outB_n <= '1'; outC_n <= '1'; outD_n <= '0'; -- 9 (1001) -> Inverse 0110
+        elsif in8_n = '0' then
+            outA_n <= '1'; outB_n <= '1'; outC_n <= '1'; outD_n <= '0'; -- 8 (1000)
+        elsif in7_n = '0' then
+            outA_n <= '0'; outB_n <= '0'; outC_n <= '0'; outD_n <= '1'; -- 7
+        elsif in6_n = '0' then
+            outA_n <= '1'; outB_n <= '0'; outC_n <= '0'; outD_n <= '1';
+        elsif in5_n = '0' then
+            outA_n <= '0'; outB_n <= '1'; outC_n <= '0'; outD_n <= '1';
+        elsif in4_n = '0' then
+            outA_n <= '1'; outB_n <= '1'; outC_n <= '0'; outD_n <= '1';
+        elsif in3_n = '0' then
+            outA_n <= '0'; outB_n <= '0'; outC_n <= '1'; outD_n <= '1';
+        elsif in2_n = '0' then
+            outA_n <= '1'; outB_n <= '0'; outC_n <= '1'; outD_n <= '1';
+        elsif in1_n = '0' then
+            outA_n <= '0'; outB_n <= '1'; outC_n <= '1'; outD_n <= '1';
+        else
+            -- No input active (all 1)
+            outA_n <= '1'; outB_n <= '1'; outC_n <= '1'; outD_n <= '1';
+        end if;
+    end process;
+
+end Behavioral;

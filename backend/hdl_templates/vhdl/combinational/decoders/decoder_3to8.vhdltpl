@@ -1,0 +1,60 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+    signal enable : STD_LOGIC;
+    signal select_in : STD_LOGIC_VECTOR(2 downto 0);
+begin
+    enable <= G1 and (not G2A_n) and (not G2B_n);
+    select_in <= C & B & A;
+    
+    process(enable, select_in)
+    begin
+        Y0_n <= '1'; Y1_n <= '1'; Y2_n <= '1'; Y3_n <= '1';
+        Y4_n <= '1'; Y5_n <= '1'; Y6_n <= '1'; Y7_n <= '1';
+        
+        if enable = '1' then
+            case select_in is
+                when "000" => Y0_n <= '0';
+                when "001" => Y1_n <= '0';
+                when "010" => Y2_n <= '0';
+                when "011" => Y3_n <= '0';
+                when "100" => Y4_n <= '0';
+                when "101" => Y5_n <= '0';
+                when "110" => Y6_n <= '0';
+                when "111" => Y7_n <= '0';
+                when others => null;
+            end case;
+        end if;
+    end process;
+
+end Behavioral;

@@ -1,0 +1,51 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    -- Behavioral stub
+    process(A1_n, A2_n, B)
+    begin
+       -- Trigger logic: (A1_n=0 or A2_n=0) and rising B
+       -- Q pulse width determined by external R/C (not modeled in HDL synthesis directly)
+       
+       if ((A1_n = '0' or A2_n = '0') and rising_edge(B)) then
+            Q <= '1';
+            Q_n <= '0';
+       else
+            -- Default state (idealized)
+            Q <= '0';
+            Q_n <= '1';
+       end if;
+    end process;
+
+end Behavioral;

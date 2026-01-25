@@ -1,0 +1,64 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+    signal count : integer range 0 to 9 := 0;
+begin
+    process(CLK, RST)
+    begin
+        if RST = '1' then
+            count <= 0;
+        elsif rising_edge(CLK) then
+            if EN_n = '0' then
+                if count = 9 then
+                    count <= 0;
+                else
+                    count <= count + 1;
+                end if;
+            end if;
+        end if;
+    end process;
+    
+    Q0 <= '1' when count = 0 else '0';
+    Q1 <= '1' when count = 1 else '0';
+    Q2 <= '1' when count = 2 else '0';
+    Q3 <= '1' when count = 3 else '0';
+    Q4 <= '1' when count = 4 else '0';
+    Q5 <= '1' when count = 5 else '0';
+    Q6 <= '1' when count = 6 else '0';
+    Q7 <= '1' when count = 7 else '0';
+    Q8 <= '1' when count = 8 else '0';
+    Q9 <= '1' when count = 9 else '0';
+    
+    CO_n <= '0' when count >= 5 else '1';
+
+end Behavioral;

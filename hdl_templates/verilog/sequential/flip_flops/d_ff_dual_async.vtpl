@@ -1,0 +1,58 @@
+// ============================================================================
+// Auto-generated HDL from IC Metadata
+// Part Number: {{part_number}}
+// IC Name:     {{ic_name}}
+// Generated:   {{timestamp}}
+// ============================================================================
+
+`timescale 1ns / 1ps
+
+module IC_{{part_number}}(
+    // Input ports
+    {% for input in ports.inputs %}
+    input wire {{input}},
+    {% endfor %}
+    
+    // Output ports
+    {% for output in ports.outputs %}
+    output reg {{output}},
+    {% endfor %}
+    
+    // Power ports
+    input wire {{ports.power[0]}},
+    input wire {{ports.power[1]}}
+);
+
+// D Flip-Flop 1
+always @(posedge {{ports.inputs[1]}} or negedge {{ports.inputs[2]}} or negedge {{ports.inputs[3]}}) begin
+    if (!{{ports.inputs[2]}}) begin
+        {{ports.outputs[0]}} <= 1'b1;  // Preset
+        {{ports.outputs[1]}} <= 1'b0;
+    end
+    else if (!{{ports.inputs[3]}}) begin
+        {{ports.outputs[0]}} <= 1'b0;  // Clear
+        {{ports.outputs[1]}} <= 1'b1;
+    end
+    else begin
+        {{ports.outputs[0]}} <= {{ports.inputs[0]}};  // Data
+        {{ports.outputs[1]}} <= ~{{ports.inputs[0]}};
+    end
+end
+
+// D Flip-Flop 2
+always @(posedge {{ports.inputs[5]}} or negedge {{ports.inputs[6]}} or negedge {{ports.inputs[7]}}) begin
+    if (!{{ports.inputs[6]}}) begin
+        {{ports.outputs[2]}} <= 1'b1;  // Preset
+        {{ports.outputs[3]}} <= 1'b0;
+    end
+    else if (!{{ports.inputs[7]}}) begin
+        {{ports.outputs[2]}} <= 1'b0;  // Clear
+        {{ports.outputs[3]}} <= 1'b1;
+    end
+    else begin
+        {{ports.outputs[2]}} <= {{ports.inputs[4]}};  // Data
+        {{ports.outputs[3]}} <= ~{{ports.inputs[4]}};
+    end
+end
+
+endmodule

@@ -1,0 +1,259 @@
+{% extends "base.html" %}
+
+{% block title %}IC HDL Generator - Learn Digital Circuit Design{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-5xl font-extrabold tracking-tight">
+                IC HDL Generator
+            </h1>
+            <p class="mt-4 text-xl text-blue-100">
+                Learn digital circuit design through interactive tools and visual design
+            </p>
+            <div class="mt-8 flex justify-center gap-4">
+                <a href="/designer"
+                    class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-all shadow-lg">
+                    🎨 Open Circuit Designer
+                </a>
+                <a href="#tutorials"
+                    class="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-400 transition-all border-2 border-white">
+                    📚 View Tutorials
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Platform Features</h2>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                <span class="text-2xl">🎨</span>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Visual Circuit Designer</h3>
+            <p class="text-gray-600">
+                Drag-and-drop interface to design digital circuits. Connect ICs, switches, and LEDs visually.
+            </p>
+            <a href="/designer" class="text-blue-600 hover:text-blue-700 font-medium mt-4 inline-block">
+                Try Designer →
+            </a>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                <span class="text-2xl">💾</span>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">IC Database</h3>
+            <p class="text-gray-600">
+                Comprehensive database of 74xx series ICs with specifications, pin configurations, and truth tables.
+            </p>
+            <a href="/ics-view" class="text-blue-600 hover:text-blue-700 font-medium mt-4 inline-block">
+                Browse ICs →
+            </a>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                <span class="text-2xl">⚡</span>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">HDL Code Generation</h3>
+            <p class="text-gray-600">
+                Automatically generate Verilog or VHDL code from visual designs or boolean expressions.
+            </p>
+            <a href="/boolean/tool" class="text-blue-600 hover:text-blue-700 font-medium mt-4 inline-block">
+                Try Boolean Tool →
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tutorials Section -->
+<div id="tutorials" class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Getting Started Tutorials</h2>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Tutorial 1 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-md bg-blue-500 text-white text-xl font-bold">
+                            1
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Design Your First Circuit</h3>
+                        <p class="mt-2 text-gray-600">
+                            Learn how to use the visual circuit designer to create a simple AND gate circuit.
+                        </p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li>✓ Drag components onto canvas</li>
+                            <li>✓ Connect wires between pins</li>
+                            <li>✓ Test your circuit logic</li>
+                            <li>✓ Export to HDL</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial 2 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-md bg-green-500 text-white text-xl font-bold">
+                            2
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">From Boolean to HDL</h3>
+                        <p class="mt-2 text-gray-600">
+                            Convert boolean expressions directly to synthesizable HDL code.
+                        </p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li>✓ Write boolean expressions</li>
+                            <li>✓ Generate truth tables</li>
+                            <li>✓ Get Verilog/VHDL code</li>
+                            <li>✓ Understand the translation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial 3 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-md bg-purple-500 text-white text-xl font-bold">
+                            3
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Understanding 74xx Series ICs</h3>
+                        <p class="mt-2 text-gray-600">
+                            Explore the library of TTL logic ICs and their applications.
+                        </p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li>✓ Browse IC specifications</li>
+                            <li>✓ View pin configurations</li>
+                            <li>✓ Understand logic functions</li>
+                            <li>✓ Generate HDL for any IC</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tutorial 4 -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div
+                            class="flex items-center justify-center w-12 h-12 rounded-md bg-red-500 text-white text-xl font-bold">
+                            4
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Save and Share Designs</h3>
+                        <p class="mt-2 text-gray-600">
+                            Save your circuit designs and load them later for iteration.
+                        </p>
+                        <ul class="mt-4 space-y-2 text-sm text-gray-700">
+                            <li>✓ Save circuits to database</li>
+                            <li>✓ Load previous designs</li>
+                            <li>✓ Export HDL code files</li>
+                            <li>✓ Build a circuit library</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Start -->
+<div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div class="bg-blue-50 rounded-2xl p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Quick Start Guide</h2>
+
+        <div class="space-y-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-bold">
+                        1
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-lg font-semibold">Choose Your Tool</h4>
+                    <p class="text-gray-700">
+                        Start with the <strong>Circuit Designer</strong> for visual design,
+                        <strong>IC Database</strong> to explore components, or
+                        <strong>Boolean Logic Tool</strong> for expression-based design.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-bold">
+                        2
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-lg font-semibold">Design Your Circuit</h4>
+                    <p class="text-gray-700">
+                        In the designer, drag components from the sidebar, place them on canvas,
+                        and use the wire tool to connect pins. Switch between Select and Wire modes using the toolbar.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white font-bold">
+                        3
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-lg font-semibold">Generate & Export</h4>
+                    <p class="text-gray-700">
+                        Click <strong>"Export HDL"</strong> to generate Verilog or VHDL code.
+                        Use <strong>"Save"</strong> to store your design for later.
+                        All generated code is production-ready!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/designer"
+                class="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-lg">
+                Start Designing Now →
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="bg-gray-800 text-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p class="text-gray-400">
+            IC HDL Generator - Educational Platform for Digital Design
+        </p>
+        <p class="text-gray-500 text-sm mt-2">
+            Built with FastAPI, Fabric.js, and ❤️ for learning
+        </p>
+    </div>
+</div>
+
+{% endblock %}

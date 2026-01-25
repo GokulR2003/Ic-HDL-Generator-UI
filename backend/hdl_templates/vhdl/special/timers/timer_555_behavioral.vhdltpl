@@ -1,0 +1,52 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    -- Behavioral model only
+    process(TRIG_n, THRES, RST_n)
+    begin
+        if RST_n = '0' then
+            OUT_555 <= '0';
+            DISCH <= '0';
+        else
+            if TRIG_n = '0' then
+                OUT_555 <= '1'; -- Trigger set
+                DISCH <= '1';
+            elsif THRES = '1' then
+                OUT_555 <= '0'; -- Threshold reset
+                DISCH <= '0';
+            end if;
+        end if;
+    end process;
+
+end Behavioral;

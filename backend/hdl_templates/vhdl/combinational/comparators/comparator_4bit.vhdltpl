@@ -1,0 +1,60 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    process(A3, A2, A1, A0, B3, B2, B1, B0, IA_lt_B, IA_eq_B, IA_gt_B)
+        variable A_val : unsigned(3 downto 0);
+        variable B_val : unsigned(3 downto 0);
+    begin
+        A_val := unsigned'(A3 & A2 & A1 & A0);
+        B_val := unsigned'(B3 & B2 & B1 & B0);
+        
+        OA_lt_B <= '0'; OA_eq_B <= '0'; OA_gt_B <= '0';
+        
+        if A_val > B_val then
+            OA_gt_B <= '1';
+        elsif A_val < B_val then
+            OA_lt_B <= '1';
+        else
+            -- Equal, check cascade inputs
+            if IA_gt_B = '1' then
+                OA_gt_B <= '1';
+            elsif IA_lt_B = '1' then
+                OA_lt_B <= '1';
+            else
+                OA_eq_B <= '1';
+            end if;
+        end if;
+    end process;
+
+end Behavioral;

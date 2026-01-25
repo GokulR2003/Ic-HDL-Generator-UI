@@ -1,0 +1,30 @@
+// ============================================================================
+// Auto-generated HDL from IC Metadata
+// Part Number: {{part_number}}
+// IC Name:     {{ic_name}}
+// Generated:   {{timestamp}}
+// ============================================================================
+
+`timescale 1ns / 1ps
+
+module IC_{{part_number}}(
+    // Control inputs
+    input wire DIR,
+    input wire OE_n,
+    
+    // Bidirectional buses
+    inout wire [7:0] A,
+    inout wire [7:0] B,
+    
+    // Power ports
+    input wire {{ports.power[0]}},
+    input wire {{ports.power[1]}}
+);
+
+// A bus drivers
+assign A = (!OE_n && !DIR) ? B : 8'bz;
+
+// B bus drivers
+assign B = (!OE_n && DIR) ? A : 8'bz;
+
+endmodule

@@ -1,0 +1,53 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+    signal count_val : unsigned(3 downto 0) := "0000";
+begin
+    -- Simplified model treating as single 4-bit synchronous for simulation viz
+    -- Real 7493 is ripple with CP0->Q0 and CP1->Q1-3 separately.
+    
+    process(CP0, MR1, MR2)
+    begin
+        if (MR1 = '1' and MR2 = '1') then
+            count_val <= "0000";
+        elsif falling_edge(CP0) then
+             count_val <= count_val + 1;
+        end if;
+    end process;
+    
+    Q0 <= count_val(0);
+    Q1 <= count_val(1);
+    Q2 <= count_val(2);
+    Q3 <= count_val(3);
+
+end Behavioral;

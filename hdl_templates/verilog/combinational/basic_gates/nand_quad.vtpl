@@ -1,0 +1,16 @@
+// Auto-generated for {{part_number}} - {{ic_name}}
+// Generated: {{timestamp}}
+
+`timescale 1ns / 1ps
+
+module IC_{{part_number}}(
+    {% for input in ports.inputs %}input {{input}},
+    {% endfor %}{% for output in ports.outputs %}output {{output}},
+    {% endfor %}input {{ports.power[0]}}, input {{ports.power[1]}}
+);
+    // NAND gates
+    assign {{ports.outputs[0]}} = ~({{ports.inputs[0]}} & {{ports.inputs[1]}});
+    assign {{ports.outputs[1]}} = ~({{ports.inputs[2]}} & {{ports.inputs[3]}});
+    assign {{ports.outputs[2]}} = ~({{ports.inputs[4]}} & {{ports.inputs[5]}});
+    assign {{ports.outputs[3]}} = ~({{ports.inputs[6]}} & {{ports.inputs[7]}});
+endmodule

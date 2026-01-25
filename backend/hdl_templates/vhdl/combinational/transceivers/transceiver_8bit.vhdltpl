@@ -1,0 +1,52 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+    process(DIR, G_n, A1, A2, A3, A4, A5, A6, A7, A8, B1, B2, B3, B4, B5, B6, B7, B8)
+    begin
+        -- Initiate High-Z
+        A1 <= 'Z'; A2 <= 'Z'; A3 <= 'Z'; A4 <= 'Z'; A5 <= 'Z'; A6 <= 'Z'; A7 <= 'Z'; A8 <= 'Z';
+        B1 <= 'Z'; B2 <= 'Z'; B3 <= 'Z'; B4 <= 'Z'; B5 <= 'Z'; B6 <= 'Z'; B7 <= 'Z'; B8 <= 'Z';
+        
+        if G_n = '0' then
+            if DIR = '1' then
+                -- A to B
+                B1 <= A1; B2 <= A2; B3 <= A3; B4 <= A4; B5 <= A5; B6 <= A6; B7 <= A7; B8 <= A8;
+            else
+                -- B to A
+                A1 <= B1; A2 <= B2; A3 <= B3; A4 <= B4; A5 <= B5; A6 <= B6; A7 <= B7; A8 <= B8;
+            end if;
+        end if;
+    end process;
+
+end Behavioral;

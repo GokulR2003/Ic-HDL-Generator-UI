@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}{{ ic.part_number }} - {{ ic.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol role="list" class="flex items-center space-x-4">
+            <li>
+                <div>
+                    <a href="/" class="text-gray-400 hover:text-gray-500">
+                        <svg class="flex-shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                            fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                        </svg>
+                        <span class="sr-only">Home</span>
+                    </a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                    </svg>
+                    <a href="/ics-view" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">ICs</a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                    </svg>
+                    <span class="ml-4 text-sm font-medium text-gray-500" aria-current="page">{{ ic.part_number }}</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        <!-- Left Column: Details -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-100">
+                <div class="px-4 py-5 sm:px-6">
+                    <h3 class="text-2xl leading-6 font-bold text-gray-900">
+                        {{ ic.part_number }}
+                    </h3>
+                    <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                        {{ ic.name }} - {{ ic.category | title }}
+                    </p>
+                </div>
+                <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                    <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                        <div class="sm:col-span-2">
+                            <dt class="text-sm font-medium text-gray-500">Description</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ ic.description }}</dd>
+                        </div>
+                        <div class="sm:col-span-1">
+                            <dt class="text-sm font-medium text-gray-500">Logic Family</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ ic.family }}</dd>
+                        </div>
+                        <div class="sm:col-span-1">
+                            <dt class="text-sm font-medium text-gray-500">Inputs / Outputs</dt>
+                            <dd class="mt-1 text-sm text-gray-900">
+                                {{ ic.pins_configuration.ports.inputs | length }} Inputs /
+                                {{ ic.pins_configuration.ports.outputs | length }} Outputs
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Truth Table Preview (if available) -->
+            {% if ic.logic_behavior.truth_table %}
+            <div class="bg-white shadow sm:rounded-lg border border-gray-100 overflow-hidden">
+                <div class="px-4 py-5 sm:px-6 border-b border-gray-200">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Logic Behavior</h3>
+                </div>
+                <div class="px-4 py-5 sm:p-6 overflow-x-auto">
+                    <pre
+                        class="bg-gray-50 p-4 rounded text-xs font-mono text-gray-700">{{ ic.logic_behavior.truth_table | tojson(indent=2) }}</pre>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column: Actions -->
+        <div class="lg:col-span-1">
+            <div class="bg-white shadow sm:rounded-lg border border-gray-100 sticky top-24">
+                <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Generate Code</h3>
+                </div>
+                <div class="px-4 py-5 sm:p-6 space-y-4">
+                    <!-- Generation Form -->
+                    <form id="genForm" class="space-y-4">
+                        <input type="hidden" id="icId" value="{{ ic.id }}">
+
+                        <div>
+                            <label for="language" class="block text-sm font-medium text-gray-700">Language</label>
+                            <select id="language" name="language"
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md border">
+                                <option value="verilog">Verilog</option>
+                                <option value="vhdl">VHDL</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="testbench" name="testbench" type="checkbox"
+                                    class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="testbench" class="font-medium text-gray-700">Generate Testbench</label>
+                                <p class="text-gray-500">Include automated test vectors.</p>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="generateHDL()"
+                            class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Generate
+                        </button>
+                    </form>
+
+                    <!-- Results Area -->
+                    <div id="resultsArea" class="hidden space-y-4 pt-4 border-t border-gray-200">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-700">HDL Code</label>
+                                <button onclick="copyToClipboard('hdlCode')"
+                                    class="text-xs text-blue-600 hover:text-blue-500">Copy</button>
+                            </div>
+                            <textarea id="hdlCode" rows="10"
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-xs border-gray-300 rounded-md font-mono"
+                                readonly></textarea>
+                        </div>
+
+                        <div id="tbContainer" class="hidden">
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-sm font-medium text-gray-700">Testbench</label>
+                                <button onclick="copyToClipboard('tbCode')"
+                                    class="text-xs text-blue-600 hover:text-blue-500">Copy</button>
+                            </div>
+                            <textarea id="tbCode" rows="10"
+                                class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-xs border-gray-300 rounded-md font-mono"
+                                readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function generateHDL() {
+        const icId = document.getElementById('icId').value;
+        const language = document.getElementById('language').value;
+        const testbench = document.getElementById('testbench').checked;
+
+        // UI Loading State
+        const btn = document.querySelector('button[onclick="generateHDL()"]');
+        const originalText = btn.innerText;
+        btn.innerText = "Generating...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/generator/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ic_id: parseInt(icId),
+                    language: language,
+                    generate_testbench: testbench
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('resultsArea').classList.remove('hidden');
+
+                // Set HDL Code
+                document.getElementById('hdlCode').value = data.hdl_code;
+
+                // Set Testbench Logic
+                const tbContainer = document.getElementById('tbContainer');
+                if (data.testbench_code) {
+                    tbContainer.classList.remove('hidden');
+                    document.getElementById('tbCode').value = data.testbench_code;
+                } else {
+                    tbContainer.classList.add('hidden');
+                }
+            } else {
+                alert('Error: ' + data.detail);
+            }
+        } catch (error) {
+            alert('Failed to generate code: ' + error);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    function copyToClipboard(elementId) {
+        const copyText = document.getElementById(elementId);
+        copyText.select();
+        document.execCommand("copy"); // Fallback for older browsers, navigator.clipboard preferred but requires HTTPS/localhost logic sometimes
+    }
+</script>
+{% endblock %}

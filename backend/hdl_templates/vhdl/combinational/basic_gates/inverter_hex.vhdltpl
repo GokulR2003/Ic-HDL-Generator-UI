@@ -1,0 +1,43 @@
+-- ============================================================================
+-- Auto-generated VHDL from IC Metadata
+-- Part: {{part_number}} - {{ic_name}}
+-- Generated: {{timestamp}}
+-- ============================================================================
+
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+
+entity IC_{{part_number}} is
+    Port (
+        {% for input in ports.inputs %}
+        {{input}} : in STD_LOGIC;
+        {% endfor %}
+        
+        {% for output in ports.outputs %}
+        {{output}} : out STD_LOGIC;
+        {% endfor %}
+        
+        {% for bidir in ports.bidirectional %}
+        {{bidir}} : inout STD_LOGIC;
+        {% endfor %}
+        
+        {% for power in ports.power %}
+        {{power}} : in STD_LOGIC
+        {% if not loop.last %};{% else %};{% endif %}
+        {% endfor %}
+    );
+end IC_{{part_number}};
+
+architecture Behavioral of IC_{{part_number}} is
+
+begin
+
+    -- Hex Inverters
+    {{ports.outputs[0]}} <= not {{ports.inputs[0]}};
+    {{ports.outputs[1]}} <= not {{ports.inputs[1]}};
+    {{ports.outputs[2]}} <= not {{ports.inputs[2]}};
+    {{ports.outputs[3]}} <= not {{ports.inputs[3]}};
+    {{ports.outputs[4]}} <= not {{ports.inputs[4]}};
+    {{ports.outputs[5]}} <= not {{ports.inputs[5]}};
+
+end Behavioral;
