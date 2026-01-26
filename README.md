@@ -1,155 +1,303 @@
-# IC HDL Generator
+# IC HDL Generator - Setup & Running Guide
 
-An educational platform for learning digital circuit design and HDL (Hardware Description Language) programming through interactive tools and visual design.
+A comprehensive web application for designing digital circuits and generating HDL (Verilog/VHDL) code.
 
-## 🌟 Features
-
-- **Visual Circuit Designer**: Drag-and-drop interface for designing digital circuits
-- **IC Database**: Comprehensive library of 74xx series TTL ICs
-- **Boolean Logic Tool**: Convert boolean expressions to HDL code
-- **HDL Generation**: Automatic Verilog and VHDL code generation
-- **Save/Load**: Store and retrieve circuit designs
-- **Educational**: Built-in tutorials and documentation
-
-## 🚀 Quick Start
-
-1. **Install Dependencies:**
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
-
-2. **Initialize Database:**
-   ```bash
-   python seed_db.py
-   ```
-
-3. **Run the Server:**
-   ```bash
-   uvicorn main:app --reload
-   ```
-
-4. **Open Browser:**
-   Navigate to `http://localhost:8000`
-
-## 📚 Documentation
-
-See [DOCUMENTATION.md](DOCUMENTATION.md) for comprehensive guides, tutorials, and API documentation.
-
-## 🎓 Tutorials
-
-### Tutorial 1: Your First Circuit
-- Open the Circuit Designer
-- Drag a 7408 (AND gate) onto the canvas
-- Add switches and an LED
-- Connect them with wires
-- Export to HDL
-
-### Tutorial 2: Boolean to HDL
-- Navigate to Boolean Logic Tool
-- Enter: `Y = A AND B`
-- View truth table
-- Generate Verilog/VHDL code
-
-### Tutorial 3: Explore ICs
-- Browse the IC Database
-- Search for specific ICs (e.g., "7474")
-- View specifications and pin configs
-- Generate HDL for any IC
-
-## 🔧 Technology Stack
-
-- **Backend**: FastAPI (Python)
-- **Frontend**: Vanilla JavaScript + Fabric.js
-- **Database**: SQLite
-- **Styling**: Tailwind CSS
+---
 
 ## 📁 Project Structure
 
 ```
-ic_hdl_generator/
-├── backend/
-│   ├── main.py              # FastAPI application
-│   ├── models.py            # Database models
-│   ├── crud.py              # Database operations
-│   ├── routers/             # API endpoints
-│   ├── services/            # Business logic
-│   ├── templates/           # HTML templates
-│   ├── hdl_templates/       # HDL code templates
-│   └── static/              # Static assets
-├── DOCUMENTATION.md         # Full documentation
-└── README.md               # This file
+ic_hdl_generator-main/
+├── backend/                 # FastAPI Backend Server
+│   ├── main.py             # Main application entry point
+│   ├── database.py         # Database configuration
+│   ├── models.py           # SQLAlchemy models
+│   ├── schemas.py          # Pydantic schemas
+│   ├── crud.py             # Database operations
+│   ├── routers/            # API route handlers
+│   ├── services/           # Business logic (HDL generation)
+│   ├── templates/          # Jinja2 HTML templates
+│   ├── static/             # Static files (CSS, JS)
+│   └── requirements.txt    # Python dependencies
+│
+└── frontend/               # Next.js Frontend (optional)
+    ├── app/                # Next.js app directory
+    ├── components/         # React components
+    └── package.json        # Node.js dependencies
 ```
-
-## 🎯 Use Cases
-
-- **Students**: Learn digital design and HDL programming
-- **Educators**: Teaching tool for digital logic courses
-- **Hobbyists**: Quick HDL code generation
-- **Prototyping**: Rapid circuit design and validation
-
-## 🛠️ Features in Detail
-
-### Circuit Designer
-- 20+ supported IC types (74xx series, 555 timer)
-- Realistic component graphics  
-- Interactive wiring system
-- Save/load functionality
-- Export to Verilog/VHDL
-
-### IC Database
-- Searchable library
-- Pin configuration diagrams
-- Truth tables
-- Logic behavior descriptions
-- Instant HDL generation
-
-### Boolean Logic Tool
-- Expression parser
-- Automatic truth table generation
-- Support for AND, OR, NOT, XOR, NAND, NOR
-- Multi-output support
-- Verilog and VHDL output
-
-## 📝 Example Workflows
-
-### Workflow 1: Design a 4-bit Adder
-1. Place four 7483 Full Adder ICs
-2. Add switches for inputs
-3. Add LEDs for outputs
-4. Wire carry chain
-5. Save as "4bit_adder"
-6. Export HDL
-
-### Workflow 2: Create State Machine
-1. Use Boolean Logic Tool  
-2. Define state transitions
-3. Generate HDL
-4. Import to simulation tool
-5. Verify timing
-
-## 🤝 Contributing
-
-This is an educational project. Contributions welcome!
-
-## 📄 License
-
-This project is for educational purposes.
-
-## 🙏 Acknowledgments
-
-- Built with FastAPI framework
-- Fabric.js for canvas rendering
-- Tailwind CSS for styling
-- Inspired by classic TTL logic design
-
-## 📞 Support
-
-For issues or questions:
-- Check DOCUMENTATION.md
-- Open an issue on GitHub
-- Review the FAQ section
 
 ---
 
-**Made with ❤️ for digital design education**
+## 🚀 Quick Start
+
+### Prerequisites
+
+- **Python 3.10+** - [Download](https://www.python.org/downloads/)
+- **Node.js 18+** (for frontend) - [Download](https://nodejs.org/)
+- **Git** - [Download](https://git-scm.com/)
+
+---
+
+## 📦 Backend Setup & Running
+
+### Step 1: Navigate to Backend Directory
+
+```powershell
+cd d:\ic_hdl_generator-main\backend
+```
+
+### Step 2: Create Virtual Environment (First Time Only)
+
+```powershell
+python -m venv venv
+```
+
+### Step 3: Activate Virtual Environment
+
+```powershell
+# Windows PowerShell
+.\venv\Scripts\Activate.ps1
+
+# Windows Command Prompt
+.\venv\Scripts\activate.bat
+
+# Linux/macOS
+source venv/bin/activate
+```
+
+> ✅ You should see `(venv)` at the beginning of your terminal prompt.
+
+### Step 4: Install Dependencies (First Time or After Updates)
+
+```powershell
+pip install -r requirements.txt
+```
+
+### Step 5: Run the Backend Server
+
+```powershell
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Server Options:**
+| Flag | Description |
+|------|-------------|
+| `--reload` | Auto-restart on code changes (development) |
+| `--host 0.0.0.0` | Allow external connections |
+| `--port 8000` | Port number (default: 8000) |
+
+### Step 6: Verify Backend is Running
+
+Open your browser and go to:
+- **Main App:** http://localhost:8000
+- **API Docs:** http://localhost:8000/docs
+- **Circuit Designer:** http://localhost:8000/designer
+
+---
+
+## 🎨 Frontend Setup & Running (Optional)
+
+The backend serves a complete web interface via templates, but if you want to run the Next.js frontend separately:
+
+### Step 1: Navigate to Frontend Directory
+
+```powershell
+cd d:\ic_hdl_generator-main\frontend
+```
+
+### Step 2: Install Dependencies (First Time Only)
+
+```powershell
+npm install
+```
+
+### Step 3: Run the Development Server
+
+```powershell
+npm run dev
+```
+
+### Step 4: Access the Frontend
+
+Open your browser: http://localhost:3000
+
+---
+
+## 🔄 Running Both Together
+
+### Option 1: Two Terminals (Recommended for Development)
+
+**Terminal 1 - Backend:**
+```powershell
+cd d:\ic_hdl_generator-main\backend
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --reload
+```
+
+**Terminal 2 - Frontend (if using Next.js):**
+```powershell
+cd d:\ic_hdl_generator-main\frontend
+npm run dev
+```
+
+### Option 2: Backend Only (Quickest)
+
+If you just need the circuit designer and HDL generator, the backend alone is sufficient:
+
+```powershell
+cd d:\ic_hdl_generator-main\backend
+.\venv\Scripts\Activate.ps1
+uvicorn main:app --reload
+```
+
+Then visit: http://localhost:8000
+
+---
+
+## 🛑 Stopping the Servers
+
+### Stop a Running Server
+
+Press `Ctrl + C` in the terminal where the server is running.
+
+### Deactivate Virtual Environment
+
+```powershell
+deactivate
+```
+
+---
+
+## 📋 Complete Restart Procedure
+
+When starting fresh after everything is closed:
+
+### 1. Start Backend
+
+```powershell
+# Open PowerShell/Terminal
+cd d:\ic_hdl_generator-main\backend
+
+# Activate virtual environment
+.\venv\Scripts\Activate.ps1
+
+# Start server
+uvicorn main:app --reload
+```
+
+### 2. Start Frontend (Optional)
+
+```powershell
+# Open another PowerShell/Terminal
+cd d:\ic_hdl_generator-main\frontend
+
+# Start development server
+npm run dev
+```
+
+### 3. Access the Application
+
+| Service | URL |
+|---------|-----|
+| Home Page | http://localhost:8000 |
+| Circuit Designer | http://localhost:8000/designer |
+| Boolean Tool | http://localhost:8000/boolean/tool |
+| IC Database | http://localhost:8000/ics-view |
+| API Documentation | http://localhost:8000/docs |
+| Frontend (Next.js) | http://localhost:3000 |
+
+---
+
+## 🔧 Troubleshooting
+
+### "uvicorn is not recognized"
+
+Make sure the virtual environment is activated:
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### "Module not found" errors
+
+Reinstall dependencies:
+```powershell
+pip install -r requirements.txt
+```
+
+### Port already in use
+
+Use a different port:
+```powershell
+uvicorn main:app --reload --port 8001
+```
+
+Or kill the process using the port:
+```powershell
+# Find the process
+netstat -ano | findstr :8000
+
+# Kill it (replace PID with the actual process ID)
+taskkill /PID <PID> /F
+```
+
+### Database issues
+
+The SQLite database is at `backend/ic_hdl.db`. To reset:
+```powershell
+# Delete the database (will lose all data!)
+del backend\ic_hdl.db
+
+# Restart the server - it will recreate the database
+uvicorn main:app --reload
+```
+
+---
+
+## 📝 Development Commands Cheat Sheet
+
+```powershell
+# === BACKEND ===
+cd d:\ic_hdl_generator-main\backend
+.\venv\Scripts\Activate.ps1          # Activate venv
+pip install -r requirements.txt       # Install deps
+uvicorn main:app --reload             # Run server
+deactivate                            # Exit venv
+
+# === FRONTEND ===
+cd d:\ic_hdl_generator-main\frontend
+npm install                           # Install deps
+npm run dev                           # Run dev server
+npm run build                         # Build for production
+
+# === GIT ===
+git status                            # Check changes
+git add -A                            # Stage all changes
+git commit -m "message"               # Commit
+git push origin master                # Push to Ic-HDL-Generator-UI
+git push icdb master:main             # Push to IcDatabase
+```
+
+---
+
+## 🌐 Repository Links
+
+- **Ic-HDL-Generator-UI:** https://github.com/GokulR2003/Ic-HDL-Generator-UI
+- **IcDatabase:** https://github.com/GokulR2003/IcDatabase
+
+---
+
+## ✅ Quick Verification Checklist
+
+After starting the servers, verify everything works:
+
+- [ ] Backend running at http://localhost:8000
+- [ ] API docs accessible at http://localhost:8000/docs
+- [ ] Circuit Designer loads at http://localhost:8000/designer
+- [ ] Can drag & drop components onto canvas
+- [ ] Can draw wires between components
+- [ ] Export HDL generates valid code
+- [ ] Boolean tool works at http://localhost:8000/boolean/tool
+
+---
+
+**Last Updated:** January 26, 2026
