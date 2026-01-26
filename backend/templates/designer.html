@@ -416,9 +416,21 @@
 
                 // Metadata
                 pin.isPort = true;
-                pin.parentId = group.id; // Fabric assigns unique IDs? No, we might need UUIDs.
+                pin.parentId = group.id;
                 pin.pinIndex = pinNum;
-                pin.pinName = (pinMap && pinMap[pinNum]) ? pinMap[pinNum] : `P${pinNum}`;
+                pin.icType = partNumber; // Store IC type for HDL generation
+
+                // pinMap is {name: number}, so we need to find the name for this pin number
+                let foundPinName = `P${pinNum}`;
+                if (pinMap) {
+                    for (const [name, num] of Object.entries(pinMap)) {
+                        if (num === pinNum) {
+                            foundPinName = name;
+                            break;
+                        }
+                    }
+                }
+                pin.pinName = foundPinName;
 
                 // visual connection
                 pin.relX = lx;
@@ -626,13 +638,14 @@
 
             // Prepare circuit data with enhanced wire information
             const circuitData = {
-                objects: canvas.toJSON(['isPort', 'isIO', 'ioType', 'pinIndex', 'pinName']),
+                objects: canvas.toJSON(['isPort', 'isIO', 'ioType', 'pinIndex', 'pinName', 'icType']),
                 wires: wires.map(w => ({
                     start: {
                         left: w.startPort.left,
                         top: w.startPort.top,
                         pinName: w.startPort.pinName || null,
                         pinIndex: w.startPort.pinIndex || null,
+                        icType: w.startPort.icType || null,
                         isIO: w.startPort.isIO || false,
                         ioType: w.startPort.ioType || null
                     },
@@ -641,6 +654,7 @@
                         top: w.endPort.top,
                         pinName: w.endPort.pinName || null,
                         pinIndex: w.endPort.pinIndex || null,
+                        icType: w.endPort.icType || null,
                         isIO: w.endPort.isIO || false,
                         ioType: w.endPort.ioType || null
                     }

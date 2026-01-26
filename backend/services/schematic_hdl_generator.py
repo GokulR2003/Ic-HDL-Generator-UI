@@ -8,6 +8,124 @@ from datetime import datetime
 import re
 
 
+class ICPinDatabase:
+    """Database of IC pin configurations with proper naming and pin mapping"""
+    
+    # Pin definitions for each IC type
+    # Format: pin_number -> (port_name, port_type: 'input'|'output'|'power')
+    IC_PIN_DEFINITIONS = {
+        '7400': {  # Quad 2-input NAND gate (A,B,Y pattern)
+            1: ('A1', 'input'), 2: ('B1', 'input'), 3: ('Y1', 'output'),
+            4: ('A2', 'input'), 5: ('B2', 'input'), 6: ('Y2', 'output'),
+            7: ('GND', 'power'),
+            8: ('Y3', 'output'), 9: ('B3', 'input'), 10: ('A3', 'input'),
+            11: ('Y4', 'output'), 12: ('B4', 'input'), 13: ('A4', 'input'),
+            14: ('VCC', 'power'),
+            'function': 'nand',
+            'gate_groups': [(('A1', 'B1'), 'Y1'), (('A2', 'B2'), 'Y2'), 
+                           (('A3', 'B3'), 'Y3'), (('A4', 'B4'), 'Y4')]
+        },
+        '7402': {  # Quad 2-input NOR gate (Y,A,B pattern - OUTPUT FIRST!)
+            1: ('Y1', 'output'), 2: ('A1', 'input'), 3: ('B1', 'input'),
+            4: ('Y2', 'output'), 5: ('A2', 'input'), 6: ('B2', 'input'),
+            7: ('GND', 'power'),
+            8: ('A3', 'input'), 9: ('B3', 'input'), 10: ('Y3', 'output'),
+            11: ('A4', 'input'), 12: ('B4', 'input'), 13: ('Y4', 'output'),
+            14: ('VCC', 'power'),
+            'function': 'nor',
+            'gate_groups': [(('A1', 'B1'), 'Y1'), (('A2', 'B2'), 'Y2'), 
+                           (('A3', 'B3'), 'Y3'), (('A4', 'B4'), 'Y4')]
+        },
+        '7404': {  # Hex Inverter
+            1: ('A1', 'input'), 2: ('Y1', 'output'),
+            3: ('A2', 'input'), 4: ('Y2', 'output'),
+            5: ('A3', 'input'), 6: ('Y3', 'output'),
+            7: ('GND', 'power'),
+            8: ('Y4', 'output'), 9: ('A4', 'input'),
+            10: ('Y5', 'output'), 11: ('A5', 'input'),
+            12: ('Y6', 'output'), 13: ('A6', 'input'),
+            14: ('VCC', 'power'),
+            'function': 'not',
+            'gate_groups': [(('A1',), 'Y1'), (('A2',), 'Y2'), (('A3',), 'Y3'),
+                           (('A4',), 'Y4'), (('A5',), 'Y5'), (('A6',), 'Y6')]
+        },
+        '7408': {  # Quad 2-input AND gate
+            1: ('A1', 'input'), 2: ('B1', 'input'), 3: ('Y1', 'output'),
+            4: ('A2', 'input'), 5: ('B2', 'input'), 6: ('Y2', 'output'),
+            7: ('GND', 'power'),
+            8: ('Y3', 'output'), 9: ('B3', 'input'), 10: ('A3', 'input'),
+            11: ('Y4', 'output'), 12: ('B4', 'input'), 13: ('A4', 'input'),
+            14: ('VCC', 'power'),
+            'function': 'and',
+            'gate_groups': [(('A1', 'B1'), 'Y1'), (('A2', 'B2'), 'Y2'), 
+                           (('A3', 'B3'), 'Y3'), (('A4', 'B4'), 'Y4')]
+        },
+        '7432': {  # Quad 2-input OR gate
+            1: ('A1', 'input'), 2: ('B1', 'input'), 3: ('Y1', 'output'),
+            4: ('A2', 'input'), 5: ('B2', 'input'), 6: ('Y2', 'output'),
+            7: ('GND', 'power'),
+            8: ('Y3', 'output'), 9: ('B3', 'input'), 10: ('A3', 'input'),
+            11: ('Y4', 'output'), 12: ('B4', 'input'), 13: ('A4', 'input'),
+            14: ('VCC', 'power'),
+            'function': 'or',
+            'gate_groups': [(('A1', 'B1'), 'Y1'), (('A2', 'B2'), 'Y2'), 
+                           (('A3', 'B3'), 'Y3'), (('A4', 'B4'), 'Y4')]
+        },
+        '7486': {  # Quad 2-input XOR gate
+            1: ('A1', 'input'), 2: ('B1', 'input'), 3: ('Y1', 'output'),
+            4: ('A2', 'input'), 5: ('B2', 'input'), 6: ('Y2', 'output'),
+            7: ('GND', 'power'),
+            8: ('Y3', 'output'), 9: ('B3', 'input'), 10: ('A3', 'input'),
+            11: ('Y4', 'output'), 12: ('B4', 'input'), 13: ('A4', 'input'),
+            14: ('VCC', 'power'),
+            'function': 'xor',
+            'gate_groups': [(('A1', 'B1'), 'Y1'), (('A2', 'B2'), 'Y2'), 
+                           (('A3', 'B3'), 'Y3'), (('A4', 'B4'), 'Y4')]
+        },
+    }
+    
+    @classmethod
+    def get_pin_info(cls, ic_type: str, pin_number: int) -> Optional[Tuple[str, str]]:
+        """Get pin name and type for a given IC and pin number"""
+        ic_def = cls.IC_PIN_DEFINITIONS.get(ic_type)
+        if ic_def and pin_number in ic_def:
+            return ic_def[pin_number]
+        return None
+    
+    @classmethod
+    def get_pin_name_from_number(cls, ic_type: str, pin_number: int) -> str:
+        """Convert pin number to valid Verilog port name"""
+        info = cls.get_pin_info(ic_type, pin_number)
+        if info:
+            return info[0]
+        # Fallback: create a valid name like P1, P2, etc.
+        return f"P{pin_number}"
+    
+    @classmethod
+    def get_ic_ports(cls, ic_type: str) -> Dict[str, List[str]]:
+        """Get all input, output, and power ports for an IC"""
+        ic_def = cls.IC_PIN_DEFINITIONS.get(ic_type, {})
+        ports = {'inputs': [], 'outputs': [], 'power': []}
+        
+        for pin_num, pin_info in ic_def.items():
+            if isinstance(pin_num, int):  # Skip metadata keys like 'function'
+                name, ptype = pin_info
+                if ptype == 'input':
+                    ports['inputs'].append(name)
+                elif ptype == 'output':
+                    ports['outputs'].append(name)
+                elif ptype == 'power':
+                    ports['power'].append(name)
+        
+        return ports
+    
+    @classmethod
+    def get_function(cls, ic_type: str) -> str:
+        """Get the logic function type for an IC"""
+        ic_def = cls.IC_PIN_DEFINITIONS.get(ic_type, {})
+        return ic_def.get('function', 'unknown')
+
+
 class SchematicHDLGenerator:
     """Generates HDL from schematic circuit data"""
     
@@ -18,23 +136,47 @@ class SchematicHDLGenerator:
         self.wires = []
         self.inputs = []
         self.outputs = []
-        self.net_connections = {}  # Maps positions to net names
-        self.component_positions = {}  # Maps component positions to component info
+        self.net_counter = 0
+        self.net_connections = {}  # Maps (component_id, pin_name) to net names
+        self.position_to_port = {}  # Maps position keys to port info
         self.parse_circuit()
     
     def _make_valid_identifier(self, name: str) -> str:
         """Convert a name to a valid Verilog/VHDL identifier"""
+        if not name:
+            return "unnamed"
         # If starts with a digit, prefix with 'IC_'
-        if name and name[0].isdigit():
+        if name[0].isdigit():
             name = f"IC_{name}"
         # Replace any non-alphanumeric characters with underscore
         name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
         return name
     
+    def _make_valid_port_name(self, name: str) -> str:
+        """Convert a pin name to a valid Verilog port name"""
+        if not name:
+            return "port"
+        # Handle names like "1A", "1B", "1Y" -> "A1", "B1", "Y1"
+        if name and name[0].isdigit():
+            # Find where letters start
+            for i, c in enumerate(name):
+                if c.isalpha():
+                    return f"{name[i:]}{name[:i]}"
+            # All digits - prefix with P
+            return f"P{name}"
+        # Replace special characters
+        name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
+        return name
+    
     def _pos_key(self, left: float, top: float, tolerance: float = 20) -> str:
         """Create a position key for matching ports (with tolerance)"""
-        # Round to nearest grid position for matching
         return f"{round(left/tolerance)*tolerance}_{round(top/tolerance)*tolerance}"
+    
+    def _generate_net_name(self) -> str:
+        """Generate a unique net name"""
+        name = f"net_{self.net_counter}"
+        self.net_counter += 1
+        return name
     
     def parse_circuit(self):
         """Parse the circuit JSON data"""
@@ -52,38 +194,39 @@ class SchematicHDLGenerator:
                 io_id = f"io_{component_id}"
                 component_id += 1
                 
+                io_name = f"{'sw' if io_type == 'input' else 'led'}_{len([x for x in self.io_components if x['type'] == io_type])}"
+                
                 io_info = {
                     'id': io_id,
                     'type': io_type,
                     'position': (obj_left, obj_top),
-                    'name': f"{'sw' if io_type == 'input' else 'led'}_{len([x for x in self.io_components if x['type'] == io_type])}"
+                    'name': io_name
                 }
                 self.io_components.append(io_info)
                 
                 # Register position for wire matching
                 pos_key = self._pos_key(obj_left, obj_top)
-                self.component_positions[pos_key] = {
-                    'component': io_info,
+                self.position_to_port[pos_key] = {
+                    'component_id': io_id,
+                    'port_name': io_name,
                     'is_io': True,
                     'io_type': io_type
                 }
                 
-                # Add to inputs/outputs
+                # Add to inputs/outputs list
                 if io_type == 'input':
-                    self.inputs.append(io_info['name'])
+                    self.inputs.append(io_name)
                 else:
-                    self.outputs.append(io_info['name'])
+                    self.outputs.append(io_name)
             
             # Check if it's an IC group
             elif obj.get('type') == 'group':
-                # Extract IC name from the group
                 ic_objects = obj.get('objects', [])
                 ic_name = None
                 
                 for sub_obj in ic_objects:
                     if sub_obj.get('type') == 'text':
                         text = sub_obj.get('text', '')
-                        # Check if it looks like an IC part number
                         if text and (text[0].isdigit() or text.startswith('74') or text.startswith('IC')):
                             ic_name = text
                             break
@@ -96,16 +239,17 @@ class SchematicHDLGenerator:
                         'valid_type': self._make_valid_identifier(ic_name),
                         'instance_name': instance_name,
                         'position': (obj_left, obj_top),
-                        'pins': []
+                        'pin_connections': {}  # pin_name -> net_name
                     }
                     component_id += 1
                     self.components.append(ic_info)
         
-        # Parse wires
+        # Parse wires and build netlist
+        self._parse_wires()
+    
+    def _parse_wires(self):
+        """Parse wire connections and build the netlist"""
         raw_wires = self.circuit_data.get('wires', [])
-        
-        # Create net assignments based on wire connections
-        net_counter = 0
         
         for wire in raw_wires:
             start = wire.get('start', {})
@@ -114,134 +258,202 @@ class SchematicHDLGenerator:
             start_key = self._pos_key(start.get('left', 0), start.get('top', 0))
             end_key = self._pos_key(end.get('left', 0), end.get('top', 0))
             
-            # Check if either end is already assigned a net
-            start_net = self.net_connections.get(start_key)
-            end_net = self.net_connections.get(end_key)
+            # Get port information from wire data
+            start_info = self._get_port_info_from_wire(start, start_key)
+            end_info = self._get_port_info_from_wire(end, end_key)
             
-            if start_net and end_net:
-                # Both already have nets - they should be the same or we merge
-                net_name = start_net
-            elif start_net:
-                net_name = start_net
-            elif end_net:
-                net_name = end_net
+            # Determine net name
+            # If either end is an I/O, use that name as the net
+            # Otherwise, generate a new net name
+            if start_info.get('is_io') and start_info.get('io_type') == 'input':
+                net_name = start_info['port_name']
+            elif end_info.get('is_io') and end_info.get('io_type') == 'input':
+                net_name = end_info['port_name']
+            elif start_info.get('is_io') and start_info.get('io_type') == 'output':
+                net_name = start_info['port_name']
+            elif end_info.get('is_io') and end_info.get('io_type') == 'output':
+                net_name = end_info['port_name']
             else:
-                net_name = f"net_{net_counter}"
-                net_counter += 1
+                # Check if either position already has a net assigned
+                existing_start_net = self.net_connections.get(start_key)
+                existing_end_net = self.net_connections.get(end_key)
+                
+                if existing_start_net:
+                    net_name = existing_start_net
+                elif existing_end_net:
+                    net_name = existing_end_net
+                else:
+                    net_name = self._generate_net_name()
             
+            # Store the connections
             self.net_connections[start_key] = net_name
             self.net_connections[end_key] = net_name
             
+            # Store wire info
             self.wires.append({
                 'start': start,
                 'end': end,
                 'start_key': start_key,
                 'end_key': end_key,
+                'start_info': start_info,
+                'end_info': end_info,
                 'net': net_name
             })
     
-    def _get_io_connections(self) -> Dict[str, str]:
-        """Map I/O component names to their connected nets"""
-        io_to_net = {}
+    def _get_port_info_from_wire(self, port_data: Dict, pos_key: str) -> Dict:
+        """Extract port information from wire endpoint data"""
+        info = {
+            'is_io': port_data.get('isIO', False),
+            'io_type': port_data.get('ioType'),
+            'pin_name': port_data.get('pinName'),
+            'pin_index': port_data.get('pinIndex'),
+            'position': (port_data.get('left', 0), port_data.get('top', 0))
+        }
         
-        for io_comp in self.io_components:
-            pos_key = self._pos_key(io_comp['position'][0], io_comp['position'][1])
-            if pos_key in self.net_connections:
-                io_to_net[io_comp['name']] = self.net_connections[pos_key]
+        # Generate valid port name
+        if info['pin_name']:
+            info['port_name'] = self._make_valid_port_name(info['pin_name'])
+        elif info['pin_index']:
+            info['port_name'] = f"P{info['pin_index']}"
+        elif info['is_io']:
+            # Find the I/O component at this position
+            for io in self.io_components:
+                io_pos_key = self._pos_key(io['position'][0], io['position'][1])
+                if io_pos_key == pos_key:
+                    info['port_name'] = io['name']
+                    info['io_type'] = io['type']
+                    break
+            else:
+                info['port_name'] = f"io_{pos_key}"
+        else:
+            info['port_name'] = f"port_{pos_key}"
         
-        return io_to_net
+        return info
     
-    def _get_unique_nets(self) -> List[str]:
-        """Get list of unique internal nets (excluding I/O)"""
+    def _get_component_pin_connections(self, component: Dict) -> Dict[str, str]:
+        """Get all pin-to-net connections for a component"""
+        connections = {}
+        ic_type = component['type']
+        
+        # Find all wires connected to this component's pins
+        for wire in self.wires:
+            for endpoint_key in ['start', 'end']:
+                endpoint = wire[endpoint_key]
+                endpoint_info = wire[f'{endpoint_key}_info']
+                
+                # Check if this wire endpoint is connected to an IC pin (not I/O)
+                if not endpoint_info.get('is_io'):
+                    # Get IC type from wire data if available
+                    wire_ic_type = endpoint.get('icType')
+                    
+                    # Match by IC type (if available) or by pin name pattern
+                    if wire_ic_type == ic_type or (not wire_ic_type and endpoint_info.get('pin_name')):
+                        pin_name = endpoint_info.get('pin_name')
+                        pin_index = endpoint_info.get('pin_index')
+                        
+                        # Use the pin name directly if available (it's already in correct format like A1, B1)
+                        if pin_name:
+                            # The pin name from frontend is already correct (A1, B1, Y1, etc.)
+                            connections[pin_name] = wire['net']
+                        elif pin_index:
+                            # Get proper pin name from database using pin number
+                            db_pin_name = ICPinDatabase.get_pin_name_from_number(ic_type, pin_index)
+                            if db_pin_name:
+                                connections[db_pin_name] = wire['net']
+        
+        return connections
+    
+    def _get_unique_internal_nets(self) -> List[str]:
+        """Get list of unique internal nets (not directly I/O names)"""
         io_names = set(self.inputs + self.outputs)
-        io_to_net = self._get_io_connections()
-        io_nets = set(io_to_net.values())
-        
-        # Get all unique nets
         all_nets = set(self.net_connections.values())
-        
-        # Internal nets are those not directly connected to I/O
-        internal_nets = all_nets - io_nets
-        
-        return sorted(list(internal_nets))
+        internal_nets = [net for net in all_nets if net not in io_names and net.startswith('net_')]
+        return sorted(internal_nets)
     
     def generate_verilog(self, module_name: str = "circuit_design") -> str:
         """Generate Verilog code from the circuit"""
         
-        # Make module name valid
         module_name = self._make_valid_identifier(module_name)
         
-        # Start with module declaration
-        verilog = f"// Generated from Circuit Designer\n"
-        verilog += f"// Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+        lines = []
+        lines.append("// Generated from Circuit Designer")
+        lines.append(f"// Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append("")
         
-        # Get I/O to net mappings
-        io_to_net = self._get_io_connections()
-        
-        # Build port list
-        verilog += f"module {module_name}(\n"
-        
-        io_ports = []
+        # Build module port list
+        port_list = []
         for inp in self.inputs:
-            io_ports.append(f"    input wire {inp}")
+            port_list.append(f"    input wire {inp}")
         for out in self.outputs:
-            io_ports.append(f"    output wire {out}")
+            port_list.append(f"    output wire {out}")
         
-        if io_ports:
-            verilog += ",\n".join(io_ports) + "\n"
+        lines.append(f"module {module_name}(")
+        if port_list:
+            lines.append(",\n".join(port_list))
         else:
-            verilog += "    // No I/O ports defined\n"
-        
-        verilog += ");\n\n"
+            lines.append("    // No I/O ports defined - add switches and LEDs to your circuit")
+        lines.append(");")
+        lines.append("")
         
         # Internal wire declarations
-        internal_nets = self._get_unique_nets()
+        internal_nets = self._get_unique_internal_nets()
         if internal_nets:
-            verilog += "    // Internal wires\n"
+            lines.append("    // Internal wires")
             for net in internal_nets:
-                verilog += f"    wire {net};\n"
-            verilog += "\n"
+                lines.append(f"    wire {net};")
+            lines.append("")
         
-        # I/O to internal net assignments
-        if io_to_net:
-            verilog += "    // I/O to internal net connections\n"
-            for io_name, net in io_to_net.items():
-                if io_name in self.inputs:
-                    verilog += f"    // Input {io_name} connects to {net}\n"
-                else:
-                    verilog += f"    // Output {io_name} connects to {net}\n"
-            verilog += "\n"
-        
-        # Component instantiations
+        # Generate IC module instantiations
         if self.components:
-            verilog += "    // Component instantiations\n"
-            verilog += "    // Note: Pin connections need to be configured based on your IC definitions\n\n"
+            lines.append("    // Component instantiations")
+            lines.append("")
             
             for comp in self.components:
-                ic_type = comp['valid_type']
-                instance = comp['instance_name']
+                ic_type = comp['type']
+                instance_name = comp['instance_name']
+                valid_type = comp['valid_type']
                 
-                verilog += f"    // {comp['type']} - {self._get_ic_description(comp['type'])}\n"
-                verilog += f"    {ic_type} {instance} (\n"
+                # Get pin connections for this component
+                pin_connections = self._get_component_pin_connections(comp)
                 
-                # Try to generate meaningful port connections based on IC type
-                port_connections = self._generate_port_connections(comp, io_to_net)
-                verilog += port_connections
+                lines.append(f"    // {ic_type} - {self._get_ic_description(ic_type)}")
+                lines.append(f"    {valid_type} {instance_name} (")
                 
-                verilog += f"    );\n\n"
+                # Get IC port definitions
+                ic_ports = ICPinDatabase.get_ic_ports(ic_type)
+                port_lines = []
+                
+                # Connect inputs
+                for port_name in ic_ports.get('inputs', []):
+                    net_name = pin_connections.get(port_name, "1'bz")  # High-Z if unconnected
+                    port_lines.append(f"        .{port_name}({net_name})")
+                
+                # Connect outputs
+                for port_name in ic_ports.get('outputs', []):
+                    net_name = pin_connections.get(port_name)
+                    if net_name:
+                        port_lines.append(f"        .{port_name}({net_name})")
+                    else:
+                        port_lines.append(f"        .{port_name}()")  # Leave unconnected
+                
+                if port_lines:
+                    lines.append(",\n".join(port_lines))
+                
+                lines.append("    );")
+                lines.append("")
         
-        verilog += "endmodule\n"
+        lines.append("endmodule")
         
-        # Add module templates for ICs used
-        verilog += self._generate_ic_modules()
+        # Add IC module definitions
+        lines.append(self._generate_ic_modules())
         
-        return verilog
+        return "\n".join(lines)
     
     def _get_ic_description(self, ic_type: str) -> str:
         """Get a description for common ICs"""
         descriptions = {
             '7400': 'Quad 2-input NAND gate',
-            '7402': 'Quad 2-input NOR gate',
+            '7402': 'Quad 2-input NOR gate (Output-first pinout)',
             '7404': 'Hex inverter',
             '7408': 'Quad 2-input AND gate',
             '7432': 'Quad 2-input OR gate',
@@ -263,69 +475,19 @@ class SchematicHDLGenerator:
         }
         return descriptions.get(ic_type, 'IC component')
     
-    def _generate_port_connections(self, comp: Dict, io_to_net: Dict) -> str:
-        """Generate port connection string for a component"""
-        ic_type = comp['type']
-        
-        # Common pin configurations for ICs
-        pin_configs = {
-            '7400': {'inputs': ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y'],
-                     'power': ['VCC', 'GND']},
-            '7402': {'inputs': ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y'],
-                     'power': ['VCC', 'GND']},
-            '7404': {'inputs': ['1A', '2A', '3A', '4A', '5A', '6A'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y', '5Y', '6Y'],
-                     'power': ['VCC', 'GND']},
-            '7408': {'inputs': ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y'],
-                     'power': ['VCC', 'GND']},
-            '7432': {'inputs': ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y'],
-                     'power': ['VCC', 'GND']},
-            '7486': {'inputs': ['1A', '1B', '2A', '2B', '3A', '3B', '4A', '4B'], 
-                     'outputs': ['1Y', '2Y', '3Y', '4Y'],
-                     'power': ['VCC', 'GND']},
-        }
-        
-        config = pin_configs.get(ic_type)
-        
-        if config:
-            lines = []
-            # Connect available inputs to switch nets
-            input_nets = [io_to_net.get(inp, inp) for inp in self.inputs]
-            output_nets = [io_to_net.get(out, out) for out in self.outputs]
-            
-            # For gate ICs, connect first gate's inputs to available inputs
-            if 'inputs' in config and input_nets:
-                for i, inp_port in enumerate(config['inputs'][:len(input_nets)]):
-                    if i < len(input_nets):
-                        lines.append(f"        .{inp_port}({input_nets[i]})")
-            
-            # Connect first output to LED
-            if 'outputs' in config and output_nets:
-                lines.append(f"        .{config['outputs'][0]}({output_nets[0]})")
-            
-            # VCC and GND
-            lines.append(f"        .VCC(1'b1)")
-            lines.append(f"        .GND(1'b0)")
-            
-            return ",\n".join(lines) + "\n"
-        else:
-            # Generic placeholder
-            return f"        // Configure pin connections for {ic_type}\n"
-    
     def _generate_ic_modules(self) -> str:
-        """Generate stub module definitions for ICs used"""
+        """Generate Verilog module definitions for ICs used"""
         if not self.components:
             return ""
         
-        modules = "\n\n// ============================================\n"
-        modules += "// IC Module Templates (implement or replace with your library)\n"
-        modules += "// ============================================\n\n"
+        lines = []
+        lines.append("")
+        lines.append("")
+        lines.append("// ============================================")
+        lines.append("// IC Module Definitions")
+        lines.append("// ============================================")
+        lines.append("")
         
-        # Track which IC types we've already generated
         generated = set()
         
         for comp in self.components:
@@ -336,155 +498,176 @@ class SchematicHDLGenerator:
                 continue
             generated.add(valid_type)
             
-            modules += f"// {self._get_ic_description(ic_type)}\n"
-            modules += f"module {valid_type} (\n"
+            ic_ports = ICPinDatabase.get_ic_ports(ic_type)
+            function = ICPinDatabase.get_function(ic_type)
             
-            # Generate generic port list based on IC type
-            if ic_type in ['7400', '7402', '7408', '7432', '7486']:
-                modules += "    input wire 1A, 1B,\n"
-                modules += "    output wire 1Y,\n"
-                modules += "    input wire 2A, 2B,\n"
-                modules += "    output wire 2Y,\n"
-                modules += "    input wire 3A, 3B,\n"
-                modules += "    output wire 3Y,\n"
-                modules += "    input wire 4A, 4B,\n"
-                modules += "    output wire 4Y,\n"
-                modules += "    input wire VCC, GND\n"
-            elif ic_type == '7404':
-                modules += "    input wire 1A, 2A, 3A, 4A, 5A, 6A,\n"
-                modules += "    output wire 1Y, 2Y, 3Y, 4Y, 5Y, 6Y,\n"
-                modules += "    input wire VCC, GND\n"
+            lines.append(f"// {self._get_ic_description(ic_type)}")
+            lines.append(f"module {valid_type} (")
+            
+            port_lines = []
+            for inp in ic_ports.get('inputs', []):
+                port_lines.append(f"    input wire {inp}")
+            for out in ic_ports.get('outputs', []):
+                port_lines.append(f"    output wire {out}")
+            
+            if port_lines:
+                lines.append(",\n".join(port_lines))
+            
+            lines.append(");")
+            lines.append("")
+            
+            # Generate logic based on function type
+            if function == 'nand':
+                lines.append("    // NAND gate implementation")
+                lines.append("    assign Y1 = ~(A1 & B1);")
+                lines.append("    assign Y2 = ~(A2 & B2);")
+                lines.append("    assign Y3 = ~(A3 & B3);")
+                lines.append("    assign Y4 = ~(A4 & B4);")
+            elif function == 'nor':
+                lines.append("    // NOR gate implementation")
+                lines.append("    assign Y1 = ~(A1 | B1);")
+                lines.append("    assign Y2 = ~(A2 | B2);")
+                lines.append("    assign Y3 = ~(A3 | B3);")
+                lines.append("    assign Y4 = ~(A4 | B4);")
+            elif function == 'and':
+                lines.append("    // AND gate implementation")
+                lines.append("    assign Y1 = A1 & B1;")
+                lines.append("    assign Y2 = A2 & B2;")
+                lines.append("    assign Y3 = A3 & B3;")
+                lines.append("    assign Y4 = A4 & B4;")
+            elif function == 'or':
+                lines.append("    // OR gate implementation")
+                lines.append("    assign Y1 = A1 | B1;")
+                lines.append("    assign Y2 = A2 | B2;")
+                lines.append("    assign Y3 = A3 | B3;")
+                lines.append("    assign Y4 = A4 | B4;")
+            elif function == 'xor':
+                lines.append("    // XOR gate implementation")
+                lines.append("    assign Y1 = A1 ^ B1;")
+                lines.append("    assign Y2 = A2 ^ B2;")
+                lines.append("    assign Y3 = A3 ^ B3;")
+                lines.append("    assign Y4 = A4 ^ B4;")
+            elif function == 'not':
+                lines.append("    // Inverter implementation")
+                lines.append("    assign Y1 = ~A1;")
+                lines.append("    assign Y2 = ~A2;")
+                lines.append("    assign Y3 = ~A3;")
+                lines.append("    assign Y4 = ~A4;")
+                lines.append("    assign Y5 = ~A5;")
+                lines.append("    assign Y6 = ~A6;")
             else:
-                modules += "    // Add port definitions based on datasheet\n"
+                lines.append("    // TODO: Implement logic based on datasheet")
             
-            modules += ");\n"
-            
-            # Add basic implementation
-            if ic_type == '7400':
-                modules += "    // NAND gate implementation\n"
-                modules += "    assign 1Y = ~(1A & 1B);\n"
-                modules += "    assign 2Y = ~(2A & 2B);\n"
-                modules += "    assign 3Y = ~(3A & 3B);\n"
-                modules += "    assign 4Y = ~(4A & 4B);\n"
-            elif ic_type == '7402':
-                modules += "    // NOR gate implementation\n"
-                modules += "    assign 1Y = ~(1A | 1B);\n"
-                modules += "    assign 2Y = ~(2A | 2B);\n"
-                modules += "    assign 3Y = ~(3A | 3B);\n"
-                modules += "    assign 4Y = ~(4A | 4B);\n"
-            elif ic_type == '7408':
-                modules += "    // AND gate implementation\n"
-                modules += "    assign 1Y = 1A & 1B;\n"
-                modules += "    assign 2Y = 2A & 2B;\n"
-                modules += "    assign 3Y = 3A & 3B;\n"
-                modules += "    assign 4Y = 4A & 4B;\n"
-            elif ic_type == '7432':
-                modules += "    // OR gate implementation\n"
-                modules += "    assign 1Y = 1A | 1B;\n"
-                modules += "    assign 2Y = 2A | 2B;\n"
-                modules += "    assign 3Y = 3A | 3B;\n"
-                modules += "    assign 4Y = 4A | 4B;\n"
-            elif ic_type == '7486':
-                modules += "    // XOR gate implementation\n"
-                modules += "    assign 1Y = 1A ^ 1B;\n"
-                modules += "    assign 2Y = 2A ^ 2B;\n"
-                modules += "    assign 3Y = 3A ^ 3B;\n"
-                modules += "    assign 4Y = 4A ^ 4B;\n"
-            elif ic_type == '7404':
-                modules += "    // Inverter implementation\n"
-                modules += "    assign 1Y = ~1A;\n"
-                modules += "    assign 2Y = ~2A;\n"
-                modules += "    assign 3Y = ~3A;\n"
-                modules += "    assign 4Y = ~4A;\n"
-                modules += "    assign 5Y = ~5A;\n"
-                modules += "    assign 6Y = ~6A;\n"
-            else:
-                modules += "    // TODO: Implement logic based on datasheet\n"
-            
-            modules += "endmodule\n\n"
+            lines.append("")
+            lines.append("endmodule")
+            lines.append("")
         
-        return modules
+        return "\n".join(lines)
     
     def generate_vhdl(self, entity_name: str = "circuit_design") -> str:
         """Generate VHDL code from the circuit"""
         
         entity_name = self._make_valid_identifier(entity_name)
-        io_to_net = self._get_io_connections()
         
-        vhdl = f"-- Generated from Circuit Designer\n"
-        vhdl += f"-- Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
-        vhdl += f"library IEEE;\n"
-        vhdl += f"use IEEE.std_logic_1164.all;\n\n"
+        lines = []
+        lines.append("-- Generated from Circuit Designer")
+        lines.append(f"-- Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append("")
+        lines.append("library IEEE;")
+        lines.append("use IEEE.std_logic_1164.all;")
+        lines.append("")
         
         # Entity declaration
-        vhdl += f"entity {entity_name} is\n"
-        vhdl += f"    port(\n"
+        lines.append(f"entity {entity_name} is")
+        lines.append("    port(")
         
-        io_ports = []
+        port_lines = []
         for inp in self.inputs:
-            io_ports.append(f"        {inp} : in std_logic")
+            port_lines.append(f"        {inp} : in std_logic")
         for out in self.outputs:
-            io_ports.append(f"        {out} : out std_logic")
+            port_lines.append(f"        {out} : out std_logic")
         
-        if io_ports:
-            vhdl += ";\n".join(io_ports) + "\n"
+        if port_lines:
+            lines.append(";\n".join(port_lines))
         else:
-            vhdl += "        -- No I/O defined\n"
+            lines.append("        -- No I/O defined - add switches and LEDs")
         
-        vhdl += f"    );\n"
-        vhdl += f"end {entity_name};\n\n"
+        lines.append("    );")
+        lines.append(f"end {entity_name};")
+        lines.append("")
         
         # Architecture
-        vhdl += f"architecture structural of {entity_name} is\n"
+        lines.append(f"architecture structural of {entity_name} is")
+        lines.append("")
         
         # Component declarations
         generated_components = set()
         if self.components:
-            vhdl += "\n    -- Component declarations\n"
+            lines.append("    -- Component declarations")
             for comp in self.components:
                 if comp['valid_type'] not in generated_components:
                     generated_components.add(comp['valid_type'])
-                    vhdl += f"    component {comp['valid_type']}\n"
-                    vhdl += f"        port(\n"
-                    vhdl += f"            A, B : in std_logic;\n"
-                    vhdl += f"            Y : out std_logic\n"
-                    vhdl += f"        );\n"
-                    vhdl += f"    end component;\n\n"
+                    ic_type = comp['type']
+                    ic_ports = ICPinDatabase.get_ic_ports(ic_type)
+                    
+                    lines.append(f"    component {comp['valid_type']}")
+                    lines.append("        port(")
+                    
+                    comp_port_lines = []
+                    for inp in ic_ports.get('inputs', []):
+                        comp_port_lines.append(f"            {inp} : in std_logic")
+                    for out in ic_ports.get('outputs', []):
+                        comp_port_lines.append(f"            {out} : out std_logic")
+                    
+                    if comp_port_lines:
+                        lines.append(";\n".join(comp_port_lines))
+                    
+                    lines.append("        );")
+                    lines.append("    end component;")
+                    lines.append("")
         
         # Signal declarations
-        internal_nets = self._get_unique_nets()
+        internal_nets = self._get_unique_internal_nets()
         if internal_nets:
-            vhdl += "    -- Internal signals\n"
+            lines.append("    -- Internal signals")
             for net in internal_nets:
-                vhdl += f"    signal {net} : std_logic;\n"
+                lines.append(f"    signal {net} : std_logic;")
+            lines.append("")
         
-        vhdl += "\nbegin\n\n"
+        lines.append("begin")
+        lines.append("")
         
         # Component instantiations
         if self.components:
-            vhdl += "    -- Component instantiations\n"
+            lines.append("    -- Component instantiations")
             for comp in self.components:
-                instance = comp['instance_name']
-                ic_type = comp['valid_type']
-                vhdl += f"    {instance}: {ic_type}\n"
-                vhdl += f"        port map(\n"
+                instance_name = comp['instance_name']
+                ic_type = comp['type']
+                valid_type = comp['valid_type']
                 
-                # Try to map I/O
-                if self.inputs:
-                    vhdl += f"            A => {self.inputs[0]},\n"
-                if len(self.inputs) > 1:
-                    vhdl += f"            B => {self.inputs[1]},\n"
-                elif self.inputs:
-                    vhdl += f"            B => '0',\n"
-                if self.outputs:
-                    vhdl += f"            Y => {self.outputs[0]}\n"
-                else:
-                    vhdl += f"            Y => open\n"
+                pin_connections = self._get_component_pin_connections(comp)
+                ic_ports = ICPinDatabase.get_ic_ports(ic_type)
                 
-                vhdl += f"        );\n\n"
+                lines.append(f"    {instance_name}: {valid_type}")
+                lines.append("        port map(")
+                
+                port_map_lines = []
+                for inp in ic_ports.get('inputs', []):
+                    net_name = pin_connections.get(inp, "'Z'")
+                    port_map_lines.append(f"            {inp} => {net_name}")
+                for out in ic_ports.get('outputs', []):
+                    net_name = pin_connections.get(out, "open")
+                    port_map_lines.append(f"            {out} => {net_name}")
+                
+                if port_map_lines:
+                    lines.append(",\n".join(port_map_lines))
+                
+                lines.append("        );")
+                lines.append("")
         
-        vhdl += f"end structural;\n"
-        return vhdl
+        lines.append(f"end structural;")
+        
+        return "\n".join(lines)
 
 
 def generate_hdl_from_circuit(circuit_data: Dict[str, Any], 
