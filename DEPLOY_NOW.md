@@ -10,9 +10,9 @@ Your IC HDL Generator is **ready to deploy**! Here's the fastest path to get it 
    ```bash
    git init
    git add .
-   git commit -m "Initial commit - IC HDL Generator"
+   git commit -m "Initial commit - IC HDL Generator UI"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/ic-hdl-generator.git
+   git remote add origin https://github.com/GokulR2003/ic-hdl-generator-UI.git
    git push -u origin main
    ```
 
