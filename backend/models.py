@@ -53,6 +53,7 @@ class Circuit(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    description = Column(Text)
     project_id = Column(Integer, ForeignKey("projects.id"))
     
     # Circuit type: 'gate_level', 'verilog_import', 'composition'
