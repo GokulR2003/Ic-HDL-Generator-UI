@@ -624,12 +624,26 @@
             const language = prompt("Language (verilog/vhdl):", "verilog");
             if (!language) return;
 
-            // Prepare circuit data
+            // Prepare circuit data with enhanced wire information
             const circuitData = {
-                objects: canvas.toJSON(['isPort', 'isIO', 'ioType']),
+                objects: canvas.toJSON(['isPort', 'isIO', 'ioType', 'pinIndex', 'pinName']),
                 wires: wires.map(w => ({
-                    start: { left: w.startPort.left, top: w.startPort.top },
-                    end: { left: w.endPort.left, top: w.endPort.top }
+                    start: {
+                        left: w.startPort.left,
+                        top: w.startPort.top,
+                        pinName: w.startPort.pinName || null,
+                        pinIndex: w.startPort.pinIndex || null,
+                        isIO: w.startPort.isIO || false,
+                        ioType: w.startPort.ioType || null
+                    },
+                    end: {
+                        left: w.endPort.left,
+                        top: w.endPort.top,
+                        pinName: w.endPort.pinName || null,
+                        pinIndex: w.endPort.pinIndex || null,
+                        isIO: w.endPort.isIO || false,
+                        ioType: w.endPort.ioType || null
+                    }
                 }))
             };
 
