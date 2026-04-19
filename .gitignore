@@ -46,3 +46,12 @@ htmlcov/
 # Deployment
 .vercel
 .netlify
+
+# Next.js build artifacts
+frontend/.next/
+frontend/node_modules/
+frontend/tsconfig.tsbuildinfo
+
+# Generated test outputs
+generated_testbenches/
+test_output.v

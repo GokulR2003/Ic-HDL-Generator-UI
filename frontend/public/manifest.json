@@ -1,0 +1,33 @@
+{
+  "name": "IC HDL Generator",
+  "short_name": "IC HDL",
+  "description": "Visual circuit designer with Verilog/VHDL export for 74xx logic ICs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060a12",
+  "theme_color": "#3dd9d6",
+  "orientation": "landscape-primary",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Designer",
+      "short_name": "Designer",
+      "url": "/designer",
+      "description": "Open the schematic designer"
+    }
+  ]
+}

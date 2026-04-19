@@ -191,11 +191,20 @@ class SchematicHDLGenerator:
             # Check if it's an I/O component (Switch or LED)
             if obj.get('isIO'):
                 io_type = obj.get('ioType')
-                io_id = f"io_{component_id}"
+                # Prefer the Fabric object's id so portId matching in _get_port_info_from_wire works
+                fabric_id = obj.get('id')
+                io_id = fabric_id if fabric_id else f"io_{component_id}"
                 component_id += 1
-                
-                io_name = f"{'sw' if io_type == 'input' else 'led'}_{len([x for x in self.io_components if x['type'] == io_type])}"
-                
+
+                # Use user-set label if it's not the default placeholder
+                user_label = obj.get('label', '')
+                default_labels = {'IN', 'OUT', ''}
+                if user_label and user_label not in default_labels:
+                    safe = re.sub(r'[^a-zA-Z0-9_]', '_', user_label)
+                    io_name = safe if safe else f"{'sw' if io_type == 'input' else 'led'}_{len([x for x in self.io_components if x['type'] == io_type])}"
+                else:
+                    io_name = f"{'sw' if io_type == 'input' else 'led'}_{len([x for x in self.io_components if x['type'] == io_type])}"
+
                 io_info = {
                     'id': io_id,
                     'type': io_type,
@@ -316,15 +325,34 @@ class SchematicHDLGenerator:
         elif info['pin_index']:
             info['port_name'] = f"P{info['pin_index']}"
         elif info['is_io']:
-            # Find the I/O component at this position
-            for io in self.io_components:
-                io_pos_key = self._pos_key(io['position'][0], io['position'][1])
-                if io_pos_key == pos_key:
-                    info['port_name'] = io['name']
-                    info['io_type'] = io['type']
-                    break
-            else:
-                info['port_name'] = f"io_{pos_key}"
+            # Prefer portId (Fabric object id) over position for matching
+            port_id = port_data.get('portId')
+            matched = False
+            if port_id:
+                for io in self.io_components:
+                    if io['id'] == port_id:
+                        info['port_name'] = io['name']
+                        info['io_type'] = io['type']
+                        matched = True
+                        break
+            if not matched:
+                # Fallback: position-based matching (for legacy / position-rich data)
+                for io in self.io_components:
+                    io_pos_key = self._pos_key(io['position'][0], io['position'][1])
+                    if io_pos_key == pos_key:
+                        info['port_name'] = io['name']
+                        info['io_type'] = io['type']
+                        matched = True
+                        break
+            if not matched:
+                # Last resort: use ioType from wire data + sequential count
+                io_type_hint = port_data.get('ioType')
+                if io_type_hint:
+                    info['io_type'] = io_type_hint
+                    candidates = [io for io in self.io_components if io['type'] == io_type_hint]
+                    info['port_name'] = candidates[0]['name'] if candidates else f"io_{pos_key}"
+                else:
+                    info['port_name'] = f"io_{pos_key}"
         else:
             info['port_name'] = f"port_{pos_key}"
         
@@ -670,7 +698,73 @@ class SchematicHDLGenerator:
         return "\n".join(lines)
 
 
-def generate_hdl_from_circuit(circuit_data: Dict[str, Any], 
+def generate_testbench_from_circuit(circuit_data: Dict[str, Any],
+                                     module_name: str = "circuit_design") -> str:
+    """Generate a Verilog testbench template for the circuit."""
+    gen = SchematicHDLGenerator(circuit_data)
+    mod = gen._make_valid_identifier(module_name)
+
+    inputs = gen.inputs
+    outputs = gen.outputs
+
+    n_in = len(inputs)
+    n_vectors = min(2 ** n_in, 16) if n_in > 0 else 4
+
+    lines = [
+        "`timescale 1ns/1ps",
+        "",
+        f"module tb_{mod};",
+        "",
+    ]
+
+    if inputs:
+        lines.append("  // DUT inputs")
+        for p in inputs:
+            lines.append(f"  reg {p};")
+        lines.append("")
+
+    if outputs:
+        lines.append("  // DUT outputs")
+        for p in outputs:
+            lines.append(f"  wire {p};")
+        lines.append("")
+
+    conn = [f"    .{p}({p})" for p in inputs + outputs]
+    lines += [
+        "  // Instantiate DUT",
+        f"  {mod} dut (",
+        ",\n".join(conn),
+        "  );",
+        "",
+        "  initial begin",
+        f'    $dumpfile("tb_{mod}.vcd");',
+        f'    $dumpvars(0, tb_{mod});',
+        "",
+    ]
+
+    if n_in == 0:
+        lines.append("    // No inputs — connect switches to your circuit")
+        lines.append("    #100;")
+    else:
+        lines.append("    // Exhaustive input combinations")
+        for i in range(n_vectors):
+            parts = []
+            for j, p in enumerate(inputs):
+                bit = (i >> (n_in - 1 - j)) & 1
+                parts.append(f"{p} = {bit}")
+            lines.append(f"    {'; '.join(parts)}; #10;")
+
+    lines += [
+        "",
+        "    $finish;",
+        "  end",
+        "",
+        "endmodule",
+    ]
+    return "\n".join(lines)
+
+
+def generate_hdl_from_circuit(circuit_data: Dict[str, Any],
                                language: str = "verilog",
                                module_name: str = "circuit_design") -> str:
     """
