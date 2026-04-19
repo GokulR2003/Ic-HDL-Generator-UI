@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
@@ -54,10 +55,6 @@ app.include_router(boolean_logic.router)
 app.include_router(circuits.router)
 
 # ── HTML / template routes ─────────────────────────────────────
-@app.get("/")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
 @app.get("/ics-view")
 async def view_ics(request: Request, search: str = "", db: Session = Depends(get_db)):
     ics_data = crud.search_ics(db, search) if search else crud.get_ics(db, limit=100)
@@ -80,6 +77,7 @@ async def circuit_designer_legacy(request: Request):
     return templates.TemplateResponse("designer.html", {"request": request})
 
 # ── Health (P5.7) ──────────────────────────────────────────────
+# Declared BEFORE the frontend mount so it is not intercepted.
 @app.get("/health")
 async def health_check(db: Session = Depends(get_db)):
     db_ok = True
@@ -92,3 +90,10 @@ async def health_check(db: Session = Depends(get_db)):
         "database": "ok" if db_ok else "error",
         "version": app.version,
     }
+
+# ── Frontend static files (Next.js export) ────────────────────
+# MUST be mounted absolutely last — a Mount("/") captures everything else.
+# Only activates when frontend/out/ exists (Render build / local test build).
+_FRONTEND_OUT = os.path.join(os.path.dirname(__file__), "..", "frontend", "out")
+if os.path.isdir(_FRONTEND_OUT):
+    app.mount("/", StaticFiles(directory=_FRONTEND_OUT, html=True), name="frontend")

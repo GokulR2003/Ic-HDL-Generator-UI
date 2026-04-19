@@ -1,12 +1,18 @@
 services:
+  # One service: FastAPI serves both the API and the Next.js static export.
+  # Build order: Next.js first (so frontend/out/ exists when Python starts).
   - type: web
     name: ic-hdl-generator
     env: python
     region: oregon
     plan: free
-    buildCommand: "cd backend && pip install -r requirements.txt && pip install gunicorn && python seed_db.py"
-    startCommand: "cd backend && gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT"
+    buildCommand: >
+      cd frontend && npm ci && npm run build &&
+      cd ../backend && pip install -r requirements.txt && python seed_db.py
+    startCommand: >
+      cd backend &&
+      gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
     autoDeploy: true
