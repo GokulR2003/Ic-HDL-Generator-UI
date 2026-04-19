@@ -91,9 +91,14 @@ async def health_check(db: Session = Depends(get_db)):
         "version": app.version,
     }
 
-# ── Frontend static files (Next.js export) ────────────────────
-# MUST be mounted absolutely last — a Mount("/") captures everything else.
-# Only activates when frontend/out/ exists (Render build / local test build).
+# ── Root: Next.js in prod, Jinja fallback in dev ──────────────
+# In production (Render): frontend/out/ exists → StaticFiles serves everything.
+# In local dev: Next.js runs on :3000; backend serves the old Jinja index at /.
 _FRONTEND_OUT = os.path.join(os.path.dirname(__file__), "..", "frontend", "out")
 if os.path.isdir(_FRONTEND_OUT):
+    # MUST be last — Mount("/") captures all remaining requests.
     app.mount("/", StaticFiles(directory=_FRONTEND_OUT, html=True), name="frontend")
+else:
+    @app.get("/")
+    async def root(request: Request):
+        return templates.TemplateResponse("index.html", {"request": request})
